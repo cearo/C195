@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<SplitPane dividerPositions="0.18522267206477733" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="710.0" prefWidth="990.0" style="-fx-background-color: #b7cee2; -fx-border-color: #90b2d1; -fx-border-width: 3px;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scheduler.View_Controller.MainScreenController">
+  <items>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+         <children>
+            <VBox fx:id="menu" prefHeight="702.0" prefWidth="179.0">
+               <children>
+                  <Label alignment="CENTER" prefHeight="36.0" prefWidth="183.0" style="-fx-border-color: #b7cee2; fx-border-width: 3px;" text="Menu">
+                     <font>
+                        <Font size="25.0" />
+                     </font>
+                  </Label>
+                  <Separator prefWidth="200.0" />
+                  <Hyperlink fx:id="customersLink" alignment="CENTER" contentDisplay="CENTER" onAction="#customersLinkHandler" prefHeight="23.0" prefWidth="183.0" style="-fx-padding: 8;" text="Customers" />
+                  <Hyperlink fx:id="appointmentsLink" alignment="CENTER" contentDisplay="CENTER" onAction="#appointmentsLinkHandler" prefHeight="23.0" prefWidth="183.0" style="-fx-padding: 8;" text="Appointments" />
+                  <Hyperlink fx:id="usersLink" alignment="CENTER" contentDisplay="CENTER" onAction="#usersLinkHandler" prefHeight="23.0" prefWidth="183.0" style="-fx-padding: 8;" text="Users" />
+                  <Hyperlink fx:id="reportsLink" alignment="CENTER" contentDisplay="CENTER" onAction="#reportsLinkHandler" prefHeight="23.0" prefWidth="183.0" style="-fx-padding: 8;" text="Reports" />
+               </children>
+            </VBox>
+         </children></AnchorPane>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+         <children>
+            <TabPane fx:id="tabPane" prefHeight="655.0" prefWidth="797.0" tabClosingPolicy="UNAVAILABLE">
+              <tabs>
+                <Tab text="Untitled Tab 1" />
+              </tabs>
+            </TabPane>
+            <ToolBar layoutX="557.0" layoutY="662.0" prefHeight="40.0" prefWidth="240.0">
+              <items>
+                <Button fx:id="addButton" mnemonicParsing="false" onAction="#addButtonHandler" text="Add" textAlignment="CENTER">
+                     <font>
+                        <Font size="14.0" />
+                     </font></Button>
+                  <Button fx:id="editButton" mnemonicParsing="false" onAction="#editButtonHandler" text="Edit" textAlignment="CENTER">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteButtonHandler" text="Delete" textAlignment="CENTER">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="deleteButton1" mnemonicParsing="false" onAction="#closeButtonHandler" text="Close" textAlignment="CENTER">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Button>
+              </items>
+            </ToolBar>
+         </children></AnchorPane>
+  </items>
+   <effect>
+      <Blend mode="COLOR_BURN" />
+   </effect>
+</SplitPane>

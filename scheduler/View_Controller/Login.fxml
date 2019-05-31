@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="283.0" prefWidth="430.0" style="-fx-background-color: #b7cee2; -fx-border-color: #90b2d1; -fx-border-width: 3px;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scheduler.View_Controller.LoginController">
+   <children>
+      <TextField layoutX="142.0" layoutY="107.0" prefHeight="25.0" prefWidth="168.0" />
+      <Label layoutX="76.0" layoutY="111.0" text="Username:">
+         <font>
+            <Font name="Lucida Sans Regular" size="12.0" />
+         </font></Label>
+      <Label layoutX="76.0" layoutY="152.0" prefHeight="17.0" prefWidth="62.0" text="Password:">
+         <font>
+            <Font name="Lucida Sans Regular" size="12.0" />
+         </font></Label>
+      <Button layoutX="245.0" layoutY="225.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="65.0" text="Login">
+         <font>
+            <Font name="Lucida Sans Regular" size="12.0" />
+         </font></Button>
+      <Button layoutX="320.0" layoutY="225.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="65.0" text="Cancel">
+         <font>
+            <Font name="Lucida Sans Regular" size="12.0" />
+         </font></Button>
+      <Label layoutX="194.0" layoutY="41.0" text="Login" textAlignment="CENTER">
+         <font>
+            <Font name="Microsoft JhengHei UI" size="16.0" />
+         </font></Label>
+      <PasswordField layoutX="142.0" layoutY="148.0" prefHeight="25.0" prefWidth="168.0" />
+   </children>
+   <effect>
+      <Blend mode="COLOR_BURN" />
+   </effect>
+</AnchorPane>
