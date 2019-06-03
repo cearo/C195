@@ -9,31 +9,31 @@
 
 <AnchorPane id="AnchorPane" prefHeight="629.0" prefWidth="802.0" style="-fx-background-color: #b7cee2;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scheduler.View_Controller.CustomersController">
    <effect>
-      <Blend mode="COLOR_BURN" />
+      <Blend />
    </effect>
    <children>
-      <ListView layoutX="588.0" layoutY="31.0" prefHeight="581.0" prefWidth="200.0" />
-      <TextField layoutX="86.0" layoutY="28.0" prefHeight="25.0" prefWidth="98.0" />
-      <TextField layoutX="275.0" layoutY="28.0" prefHeight="25.0" prefWidth="269.0" />
-      <TextField layoutX="87.0" layoutY="135.0" prefHeight="25.0" prefWidth="458.0" />
-      <TextField layoutX="87.0" layoutY="176.0" prefHeight="25.0" prefWidth="458.0" />
-      <Label layoutX="47.0" layoutY="32.0" text="ID" />
-      <Label layoutX="38.0" layoutY="139.0" text="Address" />
-      <Label layoutX="235.0" layoutY="32.0" text="Name" />
-      <Label layoutX="33.0" layoutY="180.0" text="Address 2" />
-      <CheckBox layoutX="141.0" layoutY="84.0" mnemonicParsing="false" text="Active Customer" />
-      <Label layoutX="302.0" layoutY="220.0" text="State" />
-      <Label layoutX="47.0" layoutY="220.0" text="City" />
-      <TextField layoutX="87.0" layoutY="256.0" prefHeight="25.0" prefWidth="130.0" />
-      <Label layoutX="34.0" layoutY="260.0" text="Zip Code" />
-      <Label layoutX="294.0" layoutY="260.0" text="Country" />
-      <Label layoutX="660.0" layoutY="6.0" text="Customers" />
-      <ListView layoutX="37.0" layoutY="403.0" prefHeight="200.0" prefWidth="514.0" />
-      <Label layoutX="249.0" layoutY="377.0" text="Appointments" />
-      <TextField layoutX="389.0" layoutY="80.0" prefHeight="25.0" prefWidth="155.0" />
-      <Label layoutX="304.0" layoutY="84.0" text="Phone Number" />
-      <ChoiceBox layoutX="86.0" layoutY="216.0" prefWidth="150.0" />
-      <ChoiceBox layoutX="345.0" layoutY="216.0" prefWidth="150.0" />
-      <ChoiceBox layoutX="345.0" layoutY="256.0" prefWidth="150.0" />
+      <ListView id="CustLV" layoutX="588.0" layoutY="31.0" prefHeight="581.0" prefWidth="200.0" />
+      <TextField id="CustID" disable="true" editable="false" layoutX="86.0" layoutY="28.0" prefHeight="25.0" prefWidth="98.0" />
+      <TextField id="CustName" disable="true" layoutX="275.0" layoutY="28.0" prefHeight="25.0" prefWidth="269.0" />
+      <TextField id="CustAddr1" disable="true" layoutX="87.0" layoutY="135.0" prefHeight="25.0" prefWidth="458.0" />
+      <TextField id="CustAddr2" disable="true" layoutX="87.0" layoutY="176.0" prefHeight="25.0" prefWidth="458.0" />
+      <Label id="CustIDLbl" layoutX="47.0" layoutY="32.0" text="ID" />
+      <Label id="CustAddrLbl" layoutX="38.0" layoutY="139.0" text="Address" />
+      <Label id="CustNameLbl" layoutX="235.0" layoutY="32.0" text="Name" />
+      <Label id="CustAddr2Lbl" layoutX="33.0" layoutY="180.0" text="Address 2" />
+      <CheckBox id="CustActive" disable="true" layoutX="141.0" layoutY="84.0" mnemonicParsing="false" text="Active Customer" />
+      <Label id="CustStateLbl" layoutX="302.0" layoutY="220.0" text="State" />
+      <Label id="CustCityLbl" layoutX="47.0" layoutY="220.0" text="City" />
+      <TextField id="CustZip" disable="true" layoutX="87.0" layoutY="256.0" prefHeight="25.0" prefWidth="130.0" />
+      <Label id="CustZipLbl" layoutX="34.0" layoutY="260.0" text="Zip Code" />
+      <Label id="CustCountryLbl" layoutX="294.0" layoutY="260.0" text="Country" />
+      <Label id="CustListLbl" layoutX="660.0" layoutY="6.0" text="Customers" />
+      <ListView id="CustAppLV" layoutX="37.0" layoutY="403.0" prefHeight="200.0" prefWidth="514.0" />
+      <Label id="CustAppLbl" layoutX="249.0" layoutY="377.0" text="Appointments" />
+      <TextField id="CustPhone" disable="true" layoutX="389.0" layoutY="80.0" prefHeight="25.0" prefWidth="155.0" />
+      <Label id="CustPhoneLbl" layoutX="304.0" layoutY="84.0" text="Phone Number" />
+      <ChoiceBox id="CustCity" disable="true" layoutX="86.0" layoutY="216.0" prefWidth="150.0" />
+      <ChoiceBox id="CustState" disable="true" layoutX="345.0" layoutY="216.0" prefWidth="150.0" />
+      <ChoiceBox id="CustCountry" disable="true" layoutX="345.0" layoutY="256.0" prefWidth="150.0" />
    </children>
 </AnchorPane>

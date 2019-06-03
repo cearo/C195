@@ -9,31 +9,31 @@
 
 <AnchorPane id="AnchorPane" prefHeight="629.0" prefWidth="802.0" style="-fx-background-color: #b7cee2;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scheduler.View_Controller.CustomersController">
    <effect>
-      <Blend mode="COLOR_BURN" />
+      <Blend />
    </effect>
    <children>
-      <TextField layoutX="92.0" layoutY="328.0" prefHeight="25.0" prefWidth="98.0" />
-      <TextField layoutX="246.0" layoutY="328.0" prefHeight="25.0" prefWidth="269.0" />
-      <TextField layoutX="92.0" layoutY="377.0" prefHeight="25.0" prefWidth="458.0" />
-      <TextField layoutX="92.0" layoutY="424.0" prefHeight="25.0" prefWidth="458.0" />
+      <TextField disable="true" layoutX="92.0" layoutY="328.0" prefHeight="25.0" prefWidth="98.0" />
+      <TextField disable="true" layoutX="246.0" layoutY="328.0" prefHeight="25.0" prefWidth="269.0" />
+      <TextField disable="true" layoutX="92.0" layoutY="377.0" prefHeight="25.0" prefWidth="458.0" />
+      <TextField disable="true" layoutX="92.0" layoutY="424.0" prefHeight="25.0" prefWidth="458.0" />
       <Label layoutX="43.0" layoutY="332.0" text="ID" />
       <Label layoutX="34.0" layoutY="381.0" text="Address" />
       <Label layoutX="206.0" layoutY="332.0" text="Name" />
       <Label layoutX="35.0" layoutY="428.0" text="Address 2" />
-      <CheckBox layoutX="421.0" layoutY="539.0" mnemonicParsing="false" text="Active Customer" />
+      <CheckBox disable="true" layoutX="421.0" layoutY="539.0" mnemonicParsing="false" text="Active Customer" />
       <Label layoutX="567.0" layoutY="428.0" text="State" />
       <Label layoutX="570.0" layoutY="381.0" text="City" />
-      <TextField layoutX="92.0" layoutY="472.0" prefHeight="25.0" prefWidth="130.0" />
+      <TextField disable="true" layoutX="92.0" layoutY="472.0" prefHeight="25.0" prefWidth="130.0" />
       <Label layoutX="35.0" layoutY="476.0" text="Zip Code" />
       <Label layoutX="300.0" layoutY="476.0" text="Country" />
       <Label layoutX="363.0" layoutY="14.0" text="Appointments" />
-      <TextField layoutX="614.0" layoutY="328.0" prefHeight="25.0" prefWidth="155.0" />
+      <TextField disable="true" layoutX="614.0" layoutY="328.0" prefHeight="25.0" prefWidth="155.0" />
       <Label layoutX="529.0" layoutY="332.0" text="Phone Number" />
       <ListView layoutX="45.0" layoutY="38.0" prefHeight="269.0" prefWidth="733.0" />
-      <DatePicker layoutX="92.0" layoutY="535.0" />
-      <ChoiceBox layoutX="613.0" layoutY="377.0" prefHeight="25.0" prefWidth="155.0" />
-      <ChoiceBox layoutX="614.0" layoutY="424.0" prefHeight="25.0" prefWidth="155.0" />
-      <ChoiceBox layoutX="355.0" layoutY="472.0" prefHeight="25.0" prefWidth="174.0" />
+      <DatePicker disable="true" layoutX="92.0" layoutY="535.0" />
+      <ChoiceBox disable="true" layoutX="613.0" layoutY="377.0" prefHeight="25.0" prefWidth="155.0" />
+      <ChoiceBox disable="true" layoutX="614.0" layoutY="424.0" prefHeight="25.0" prefWidth="155.0" />
+      <ChoiceBox disable="true" layoutX="355.0" layoutY="472.0" prefHeight="25.0" prefWidth="174.0" />
       <Label layoutX="40.0" layoutY="539.0" prefHeight="17.0" prefWidth="43.0" text="Date" />
    </children>
 </AnchorPane>

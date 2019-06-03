@@ -9,19 +9,25 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import scheduler.Scheduler;
 
 /**
@@ -31,6 +37,8 @@ import scheduler.Scheduler;
  */
 public class MainScreenController implements Initializable {
 
+    @FXML
+    private SplitPane mainWindow;
     @FXML
     private VBox menu;
     @FXML
@@ -53,6 +61,8 @@ public class MainScreenController implements Initializable {
     private Button deleteButton1;
     
     private SingleSelectionModel selectionModel;
+    private boolean editMode = false;
+    Parent root;
 
     /**
      * Initializes the controller class.
@@ -60,6 +70,7 @@ public class MainScreenController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
        selectionModel = tabPane.getSelectionModel();
+
     }    
 
     @FXML
@@ -85,7 +96,7 @@ public class MainScreenController implements Initializable {
 //            selectionModel.select(tab);
 //        }
 
-        tabCreator("Customers");
+        tabHandler("Customers");
         
     }
 
@@ -110,7 +121,7 @@ public class MainScreenController implements Initializable {
 //            tabPane.getTabs().add(tab);
 //            selectionModel.select(tab);
 //        }
-        
+        tabHandler("Appointments");
     }
 
     @FXML
@@ -134,17 +145,78 @@ public class MainScreenController implements Initializable {
 //            tabPane.getTabs().add(tab);
 //            selectionModel.select(tab);
 //        }
-//        
+         tabHandler("Users");
     }
 
     @FXML
     private void reportsLinkHandler(ActionEvent event) {
         
-        
+        tabHandler("Reports");
     }
 
     @FXML
     private void addButtonHandler(ActionEvent event) {
+        Object selectedItem = selectionModel.getSelectedItem();
+        /* *****TO DO*****
+           I need to figure out how to get the text on the Add button
+           to change when it's pressed.
+        */
+
+        if(selectedItem instanceof Tab) {
+            String addBtnTxt = addButton.getText();
+            AnchorPane pageContent = (AnchorPane) (
+                    (Tab) selectedItem).getContent();
+            ObservableList<Node> children = pageContent.getChildren();
+            switch (addBtnTxt) {
+                case "Add":
+                    editMode = true;
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            addButton.setText("Save");
+                        }
+                    });
+                    
+                    children.forEach((child) -> {
+                        if(child.isDisabled()) {
+                            child.setDisable(false);
+                        }
+                        else if(!(child instanceof Label)){
+                            child.setDisable(true);
+                        }
+                    });
+                case "Save":
+                    editMode = false;
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            addButton.setText("Add");
+                        }
+                    });
+                    children.forEach((child) -> {
+                       if(!child.isDisabled() && !(child instanceof Label)) {
+                           child.setDisable(true);
+                       }
+                       else {
+                           child.setDisable(false);
+                       }
+                    });
+            }        
+        }
+
+//            editMode = true;
+//            Object selectedItem = selectionModel.getSelectedItem();
+//            if(selectedItem instanceof Tab) {
+//                System.out.println(((Tab) selectedItem).getText());
+//                AnchorPane pageContent = (AnchorPane) (
+//                        (Tab) selectedItem).getContent();
+//                ObservableList<Node> children = pageContent.getChildren();
+//                children.forEach((child) -> {
+//                    if(child.isDisabled()) {
+//                        child.setDisable(false);
+//                    }
+//                });
+//            }
     }
 
     @FXML
@@ -159,27 +231,27 @@ public class MainScreenController implements Initializable {
     private void closeButtonHandler(ActionEvent event) {
     }
     
-    private void tabCreator(String tabName) {
+    private void tabHandler(String tabName) {
         Boolean doesTabExist = false;
         ObservableList<Tab> tabList = tabPane.getTabs();
-        
+        Tab tab;
         for(Tab i : tabList) {
             String tabId = i.getId();
-            if(tabId.equals(tabName)) {
+            if(tabId != null && tabId.equals(tabName)) {
                 doesTabExist = true;
+                tab = i;
+                selectionModel.select(tab);
                 break;
             }
         }
         
         if(!doesTabExist) {
-            Tab tab = new Tab(tabName);
+            tab = new Tab(tabName);
             tab.setId(tabName);
             FXMLLoader loader = new FXMLLoader();
             try {
-//                loader.setLocation(getClass().getResource(
-//                    Scheduler.BASE_FOLDER_PATH + tabName + ".fxml"));
-                Parent root = (Parent) FXMLLoader.load(this.getClass().
-                        getResource(Scheduler.BASE_FOLDER_PATH + tabName + ".fxml"));
+                AnchorPane root = loader.load(getClass().getResource(
+                        Scheduler.BASE_FOLDER_PATH + tabName + ".fxml"));
                 tab.setContent(root);
             }
             catch(IOException ioEX) {
@@ -190,4 +262,6 @@ public class MainScreenController implements Initializable {
             selectionModel.select(tab);
         }
     }
+    
+
 }
