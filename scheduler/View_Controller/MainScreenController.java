@@ -60,9 +60,21 @@ public class MainScreenController implements Initializable {
     @FXML
     private Button deleteButton1;
     
+    // selectionModel is used to gather info about what the user is doing
     private SingleSelectionModel selectionModel;
-    private boolean editMode = false;
-    Parent root;
+    /* 
+        editMode maintains the state of the application.
+        Certain actions will be disabled while in Edit Mode including:
+        - Using the Edit button
+        - Using the Delete button
+        - Switching tabs
+        - Closing a tab
+        -- A Discard Changes prompt will appear which will take the application
+           out of Edit Mode before clearing the form.
+        - Exiting the application
+        -- Again, Discard Changes prompt.
+    */
+    private boolean editMode;
 
     /**
      * Initializes the controller class.
@@ -70,7 +82,7 @@ public class MainScreenController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
        selectionModel = tabPane.getSelectionModel();
-
+       editMode = false;
     }    
 
     @FXML
@@ -156,41 +168,54 @@ public class MainScreenController implements Initializable {
 
     @FXML
     private void addButtonHandler(ActionEvent event) {
+        // The current selected UI object
         Object selectedItem = selectionModel.getSelectedItem();
-        /* *****TO DO*****
-           I need to figure out how to get the text on the Add button
-           to change when it's pressed.
-        */
+        // Selecting the content in the tab, which is contained in an AnchorPane
+        AnchorPane pageContent = (AnchorPane) ((Tab) selectedItem).getContent();
+        // Collecting the individual elements on the page
+        ObservableList<Node> children = pageContent.getChildren();
 
         if(selectedItem instanceof Tab) {
+            // On initial load this should be "Add"
             String addBtnTxt = addButton.getText();
-            AnchorPane pageContent = (AnchorPane) (
-                    (Tab) selectedItem).getContent();
-            ObservableList<Node> children = pageContent.getChildren();
+ 
             switch (addBtnTxt) {
                 case "Add":
                     editMode = true;
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            addButton.setText("Save");
-                        }
-                    });
-                    
+                               
                     children.forEach((child) -> {
                         if(child.isDisabled()) {
+                            // Enabling all disabled children
                             child.setDisable(false);
                         }
+                        // I don't want to disable Labels
                         else if(!(child instanceof Label)){
+                            // Disabling List Views
                             child.setDisable(true);
                         }
                     });
+                    // Tapping into the main application thread
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Add button becomes Save button
+                            addButton.setText("Save");
+                            // Can't use Edit button
+                            editButton.setDisable(true);
+                            // Can't use Delete button
+                            deleteButton.setDisable(true);
+                        }
+                    });
+                break;    
                 case "Save":
                     editMode = false;
+
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
                             addButton.setText("Add");
+                            editButton.setDisable(false);
+                            deleteButton.setDisable(false);
                         }
                     });
                     children.forEach((child) -> {
@@ -201,22 +226,9 @@ public class MainScreenController implements Initializable {
                            child.setDisable(false);
                        }
                     });
+                break;
             }        
         }
-
-//            editMode = true;
-//            Object selectedItem = selectionModel.getSelectedItem();
-//            if(selectedItem instanceof Tab) {
-//                System.out.println(((Tab) selectedItem).getText());
-//                AnchorPane pageContent = (AnchorPane) (
-//                        (Tab) selectedItem).getContent();
-//                ObservableList<Node> children = pageContent.getChildren();
-//                children.forEach((child) -> {
-//                    if(child.isDisabled()) {
-//                        child.setDisable(false);
-//                    }
-//                });
-//            }
     }
 
     @FXML
@@ -232,7 +244,7 @@ public class MainScreenController implements Initializable {
     }
     
     private void tabHandler(String tabName) {
-        Boolean doesTabExist = false;
+        boolean doesTabExist = false;
         ObservableList<Tab> tabList = tabPane.getTabs();
         Tab tab;
         for(Tab i : tabList) {
