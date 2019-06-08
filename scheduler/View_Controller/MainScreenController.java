@@ -7,6 +7,7 @@ package scheduler.View_Controller;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -36,7 +37,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import scheduler.Scheduler;
-
+import scheduler.Model.SQLHandler;
 /**
  * FXML Controller class
  *
@@ -90,6 +91,7 @@ public class MainScreenController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
        selectionModel = tabPane.getSelectionModel();
        setEditMode(false);
+       
     }    
 
     @FXML
@@ -138,7 +140,24 @@ public class MainScreenController implements Initializable {
 
     @FXML
     private void deleteButtonHandler(ActionEvent event) {
-        
+        SQLHandler sql = new SQLHandler();
+        Connection conn = sql.getSqlConnection();
+        class SQLConn implements Runnable {
+            public void run() {
+                System.out.println(conn);
+                for(int i=0; i <500; i++) {
+                    System.out.println(i);
+                }
+           }
+            public void main(String[] args) {
+                (new Thread(new SQLConn())).start();
+            }
+        }
+        System.out.println("Begin");
+        (new Thread(new SQLConn())).start();
+        (new Thread(new SQLConn())).start();
+        (new Thread(new SQLConn())).start();
+        System.out.println("End");
     }
 
     @FXML
@@ -198,8 +217,8 @@ public class MainScreenController implements Initializable {
         child.setDisable() however, that felt more clever than clear. For 
         clarity's sake, I explicity stated the boolean values 
         passed to the method.
-    
     */
+    
     public void setChildElementsDisabled(ObservableList<Node> children) {
         
         children.forEach((child) -> {
@@ -243,7 +262,6 @@ public class MainScreenController implements Initializable {
                 case "addButton":
                     clearFormData(children);
                 case "editButton":
-                    System.out.println("In edit case");
                     setEditMode(true);
           
                     setChildElementsDisabled(children);
