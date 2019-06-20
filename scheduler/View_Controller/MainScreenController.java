@@ -37,7 +37,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import scheduler.Scheduler;
-import scheduler.Model.SQLHandler;
+import scheduler.Model.SQLConnectionHandler;
 /**
  * FXML Controller class
  *
@@ -89,6 +89,7 @@ public class MainScreenController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        System.out.println("In MainscrenController");
        selectionModel = tabPane.getSelectionModel();
        setEditMode(false);
        
@@ -140,24 +141,7 @@ public class MainScreenController implements Initializable {
 
     @FXML
     private void deleteButtonHandler(ActionEvent event) {
-        SQLHandler sql = new SQLHandler();
-        Connection conn = sql.getSqlConnection();
-        class SQLConn implements Runnable {
-            public void run() {
-                System.out.println(conn);
-                for(int i=0; i <500; i++) {
-                    System.out.println(i);
-                }
-           }
-            public void main(String[] args) {
-                (new Thread(new SQLConn())).start();
-            }
-        }
-        System.out.println("Begin");
-        (new Thread(new SQLConn())).start();
-        (new Thread(new SQLConn())).start();
-        (new Thread(new SQLConn())).start();
-        System.out.println("End");
+       
     }
 
     @FXML
@@ -179,20 +163,28 @@ public class MainScreenController implements Initializable {
         }
         
         if(!doesTabExist) {
+            System.out.println(tabName);
             tab = new Tab(tabName);
             tab.setId(tabName);
             FXMLLoader loader = new FXMLLoader();
+            System.out.println("Loader initialized");
             try {
+                System.out.println("About to load screen to tab");
                 AnchorPane root = loader.load(getClass().getResource(
                         Scheduler.BASE_FOLDER_PATH + tabName + ".fxml"));
+                System.out.println("Screen loaded");
                 tab.setContent(root);
+                System.out.println("Content set");
             }
             catch(IOException ioEX) {
-                System.out.println("Issue loading " + tabName + ".fxml");
+                System.out.println("Issue loading " + 
+                        Scheduler.BASE_FOLDER_PATH + tabName + ".fxml");
                 ioEX.printStackTrace();
             }
             tabPane.getTabs().add(tab);
+            System.out.println("Tab added");
             selectionModel.select(tab);
+            System.out.println("Tab selected");
         }
     }
     // Enables/Disables Edit Mode for the Application
