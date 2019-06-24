@@ -7,7 +7,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="629.0" prefWidth="802.0" style="-fx-background-color: #b7cee2;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scheduler.View_Controller.CustomersController">
+<AnchorPane id="AnchorPane" prefHeight="629.0" prefWidth="802.0" style="-fx-background-color: #b7cee2;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scheduler.View_Controller.AppointmentsController">
    <effect>
       <Blend />
    </effect>

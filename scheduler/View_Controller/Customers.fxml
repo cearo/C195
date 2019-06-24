@@ -21,18 +21,16 @@
       <Label id="CustNameLbl" layoutX="235.0" layoutY="32.0" text="Name" />
       <Label id="CustAddr2Lbl" layoutX="33.0" layoutY="180.0" text="Address 2" />
       <CheckBox id="CustActive" fx:id="activeCheckBox" disable="true" layoutX="141.0" layoutY="84.0" mnemonicParsing="false" text="Active Customer" />
-      <Label id="CustStateLbl" layoutX="302.0" layoutY="220.0" text="State" />
       <Label id="CustCityLbl" layoutX="47.0" layoutY="220.0" text="City" />
       <TextField id="CustZip" fx:id="zipField" disable="true" layoutX="87.0" layoutY="256.0" prefHeight="25.0" prefWidth="130.0" />
       <Label id="CustZipLbl" layoutX="34.0" layoutY="260.0" text="Zip Code" />
-      <Label id="CustCountryLbl" layoutX="294.0" layoutY="260.0" text="Country" />
+      <Label id="CustCountryLbl" layoutX="289.0" layoutY="220.0" text="Country" />
       <Label id="CustListLbl" layoutX="660.0" layoutY="6.0" text="Customers" />
       <Label id="CustAppLbl" layoutX="266.0" layoutY="374.0" text="Appointments" />
       <TextField id="CustPhone" fx:id="phoneField" disable="true" layoutX="389.0" layoutY="80.0" prefHeight="25.0" prefWidth="155.0" />
       <Label id="CustPhoneLbl" layoutX="304.0" layoutY="84.0" text="Phone Number" />
       <ChoiceBox id="CustCity" fx:id="cityChoice" disable="true" layoutX="86.0" layoutY="216.0" prefWidth="150.0" />
-      <ChoiceBox id="CustState" fx:id="stateChoice" disable="true" layoutX="345.0" layoutY="216.0" prefWidth="150.0" />
-      <ChoiceBox id="CustCountry" fx:id="countryChoice" disable="true" layoutX="345.0" layoutY="256.0" prefWidth="150.0" />
+      <ChoiceBox id="CustCountry" fx:id="countryChoice" disable="true" layoutX="340.0" layoutY="216.0" prefWidth="150.0" />
       <TableView fx:id="custTable" layoutX="589.0" layoutY="28.0" prefHeight="583.0" prefWidth="200.0">
         <columns>
           <TableColumn fx:id="custIdCol" prefWidth="47.0" text="ID" />

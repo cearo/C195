@@ -5,14 +5,27 @@
  */
 package scheduler.Model;
 
+import scheduler.util.SQLConnectionHandler;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.TextField;
+import org.omg.CORBA.portable.ApplicationException;
+import scheduler.util.ApplicationState;
 
 /**
  *
@@ -80,6 +93,211 @@ public class Customer {
     
     public IntegerProperty addressIdProperty() {
         return addressId;
+    }
+    
+    public static Customer addCustomerRecord(ObservableList<Node> children) 
+                                            throws IllegalStateException,
+                                                   SQLException {
+        Customer cust = null;
+        String appOperation = ApplicationState.getCurrentOperation();
+        String currUser = ApplicationState.getCurrentUser();
+        Address customerAddress = null;
+        
+        if(appOperation.equals("Add")) {
+            SQLConnectionHandler sql = new SQLConnectionHandler();
+            int custId = 0;
+            String name = null;
+            int active = 0;
+            String phone = null;
+            String addr1 = null;
+            String addr2 = null;
+            String city = null;
+            String zip = null;
+            String country;
+            int cityId = 0;
+            Timestamp timestamp = null;
+            int addrId = 0;
+
+            
+            for(int i = 0; i < children.size(); i++) {
+                Node child = children.get(i);
+                String childId = child.getId();
+                
+                if(child instanceof TextField) {
+                    
+                    String childText = ((TextField) child).getText();
+                    
+                    
+                    switch(childId) {
+                        
+                        case "CustId":
+                            custId = Integer.parseInt(childText);
+                            break;
+                            
+                        case "CustName":
+                            name = childText;
+                            break;
+                            
+                        case "CustPhone":
+                            phone = childText;
+                            break;
+                            
+                        case "CustAddr1":
+                            addr1 = childText;
+                            break;
+                            
+                        case "CustAddr2":
+                            addr2 = childText;
+                            break;
+                            
+                        case "CustZip":
+                            zip = childText;
+                            break;
+                    }
+                    
+                }
+                else if(child instanceof CheckBox) {
+                    
+                    boolean isSelected = ((CheckBox) child).isSelected();
+                    
+                    if(isSelected) {
+                        active = 1;
+                    }
+                    else {
+                        active = 0;
+                    }
+                }
+                else if(child instanceof ChoiceBox) {
+                    
+                    Object selectedValue = ((ChoiceBox) child).getValue();
+
+                    switch(childId) {
+                        
+                        case "CustCity":
+                            city = (String) selectedValue;
+                            break;
+                        
+                        case "CustCountry":
+                            country = (String) selectedValue;
+                            break;
+                    }
+                }
+            }
+            String addressInsert =
+                    "INSERT into address(address, address2, cityId,"
+                    + "postalCode, phone, createDate, createdBy)"
+                    + "VALUES(?, ?, ?, ?, ?, ?, ?);";
+            String getCityId = String.format("SELECT cityId "
+                                             + "FROM city "
+                                             + "WHERE city = '%s';", city);
+            String sqlTime = "SELECT NOW();";
+            
+            Connection conn = sql.getSqlConnection();
+            
+            ResultSet cityIdResult = sql.executeQuery(getCityId);
+            
+            ResultSet sqlTimeResult = sql.executeQuery(sqlTime);
+            
+            try {
+                if(cityIdResult.next()) {
+                    cityId = cityIdResult.getInt("cityId");
+                }
+                
+            }
+            catch(SQLException SqlEx) {
+                SqlEx.printStackTrace();
+                String err = String.format("There was an error retrieving"
+                        + "the cityId. cityId = %d", cityId);
+                SQLException appEx = new SQLException(err);
+                throw appEx;
+            }
+            
+            try {
+                if(sqlTimeResult.next()) {
+                    timestamp = sqlTimeResult.getTimestamp(1);
+                }
+                
+            }
+            catch(SQLException SqlEx) {
+                SqlEx.printStackTrace();
+                String err = String.format("There was an error retrieving"
+                        + "the time from the database. Time = %s", timestamp);
+                SQLException appEx = new SQLException(err);
+                throw appEx;
+            }
+            
+            try { 
+                PreparedStatement pstmnt = 
+                        conn.prepareStatement(addressInsert, 
+                                              Statement.RETURN_GENERATED_KEYS);
+                pstmnt.setString(1, addr1);
+                pstmnt.setString(2, addr2);
+                pstmnt.setInt(3, cityId);
+                pstmnt.setString(4, zip);
+                pstmnt.setString(5, phone);
+                pstmnt.setTimestamp(6, timestamp);
+                pstmnt.setString(7, currUser);
+                
+                int rowsAffected = pstmnt.executeUpdate();
+                
+                if(rowsAffected == 1) {
+                    ResultSet addrIdResult = pstmnt.getGeneratedKeys();
+                    if(addrIdResult.next()) {
+                        addrId = addrIdResult.getInt(1);
+                    }
+                    else {
+                        String err = String.format(
+                                "There was an error getting the generated"
+                                + " keys for the new address. AddrId = %s", 
+                                addrId);
+                        SQLException appEx = new SQLException(err);
+                        throw appEx;
+                    }
+                }
+            }
+            catch(SQLException SqlEx) {
+                SqlEx.printStackTrace();
+            }
+            String addCustomerQuery = 
+                    "INSERT INTO customer (customerName, addressId, active,"
+                    + "createDate, createdBy)"
+                    + "VALUES(?, ?, ?, ?, ?)";
+            
+            try {
+                PreparedStatement pstmnt = 
+                        conn.prepareStatement(addCustomerQuery, 
+                                Statement.RETURN_GENERATED_KEYS);
+                pstmnt.setString(1, name);
+                pstmnt.setInt(2, addrId);
+                pstmnt.setInt(3, active);
+                pstmnt.setTimestamp(4, timestamp);
+                pstmnt.setString(5, currUser);
+                
+                int rowsAffected = pstmnt.executeUpdate();
+                
+                if(rowsAffected == 1) {
+                    ResultSet custIdResult = pstmnt.getGeneratedKeys();
+                    if(custIdResult.next()) {
+                        custId = custIdResult.getInt(1);
+                    }
+                }
+            }
+            catch(SQLException SqlEx) {
+                SqlEx.printStackTrace();
+            }
+            cust = new Customer(custId, name, active, addrId);
+            cust.getCustomerAddress();
+        }
+        
+        else {
+            String errMsg = "Application state does not permit adding a new"
+                    + "customer record."
+                    + "\nEdit Mode = " + ApplicationState.getEditMode()
+                    + "\nOperation = " + ApplicationState.getCurrentOperation();
+            IllegalStateException ex = new IllegalStateException(errMsg);
+            throw ex;
+        }
+        return cust;
     }
     
     public void updateCustomerRecord(int id, 

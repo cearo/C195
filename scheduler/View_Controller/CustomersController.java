@@ -29,7 +29,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import scheduler.Model.Address;
 import scheduler.Model.Customer;
-import scheduler.Model.SQLConnectionHandler;
+import scheduler.util.SQLConnectionHandler;
 
 /**
  * FXML Controller class

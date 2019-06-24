@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package scheduler.Model;
+package scheduler.util;
 
 import java.sql.*;
 
@@ -40,6 +40,7 @@ public class SQLConnectionHandler {
     }
     
     public ResultSet executeQuery(String query) {
+        System.out.println(query);
         ResultSet result = null;
         
         if(conn == null) {
@@ -54,4 +55,23 @@ public class SQLConnectionHandler {
         }
         return result;
     }
+    
+//    public PreparedStatement executeUpdate(String query) {
+//        PreparedStatement result = null;
+//        
+//        if(conn == null) {
+//            this.getSqlConnection();
+//        }
+//        try { 
+//            PreparedStatement pstmnt = 
+//                    this.conn.prepareStatement(query, 
+//                                               Statement.RETURN_GENERATED_KEYS);
+//            pstmnt.set
+//            
+//        }
+//        catch(SQLException SqlEx) {
+//            SqlEx.printStackTrace();
+//        }
+//        return result;
+//    }
 }

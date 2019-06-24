@@ -8,10 +8,12 @@ package scheduler.View_Controller;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -37,7 +39,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import scheduler.Scheduler;
-import scheduler.Model.SQLConnectionHandler;
+import scheduler.Model.Customer;
+import scheduler.util.ApplicationState;
+import scheduler.util.SQLConnectionHandler;
 /**
  * FXML Controller class
  *
@@ -83,16 +87,14 @@ public class MainScreenController implements Initializable {
         -- Again, Discard Changes prompt.
     */
     private static boolean editMode;
-
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        System.out.println("In MainscrenController");
        selectionModel = tabPane.getSelectionModel();
-       setEditMode(false);
-       
+       ApplicationState.setEditMode(false);
+       ApplicationState.setCurrentOperation("View");
     }    
 
     @FXML
@@ -133,6 +135,7 @@ public class MainScreenController implements Initializable {
     @FXML
     private void editButtonHandler(ActionEvent event) {
         Object selectedItem = selectionModel.getSelectedItem();
+        
         if(selectedItem instanceof Tab) {
             editModeHandler(event);
         }
@@ -141,11 +144,21 @@ public class MainScreenController implements Initializable {
 
     @FXML
     private void deleteButtonHandler(ActionEvent event) {
+       Object selectedItem = selectionModel.getSelectedItem();
+       
        
     }
 
     @FXML
     private void closeButtonHandler(ActionEvent event) {
+        Object selectedItem = selectionModel.getSelectedItem();
+        
+        if(selectedItem instanceof Tab) {
+            if(!ApplicationState.getEditMode()) {
+                tabPane.getTabs().remove((Tab) selectedItem);
+            }
+        }
+        
     }
     
     private void tabHandler(String tabName) {
@@ -163,18 +176,13 @@ public class MainScreenController implements Initializable {
         }
         
         if(!doesTabExist) {
-            System.out.println(tabName);
             tab = new Tab(tabName);
             tab.setId(tabName);
             FXMLLoader loader = new FXMLLoader();
-            System.out.println("Loader initialized");
             try {
-                System.out.println("About to load screen to tab");
                 AnchorPane root = loader.load(getClass().getResource(
                         Scheduler.BASE_FOLDER_PATH + tabName + ".fxml"));
-                System.out.println("Screen loaded");
                 tab.setContent(root);
-                System.out.println("Content set");
             }
             catch(IOException ioEX) {
                 System.out.println("Issue loading " + 
@@ -182,15 +190,13 @@ public class MainScreenController implements Initializable {
                 ioEX.printStackTrace();
             }
             tabPane.getTabs().add(tab);
-            System.out.println("Tab added");
             selectionModel.select(tab);
-            System.out.println("Tab selected");
         }
     }
     // Enables/Disables Edit Mode for the Application
-    public static void setEditMode(boolean mode) {
-        editMode = mode;
-    }
+//    public static void setEditMode(boolean mode) {
+//        editMode = mode;
+//    }
     
    /*
         This method enables disabled form elements and disables enabled ones.
@@ -253,8 +259,31 @@ public class MainScreenController implements Initializable {
                 */
                 case "addButton":
                     clearFormData(children);
+                    ApplicationState.setEditMode(true);
+                    ApplicationState.setCurrentOperation("Add");
+                    
+                    setChildElementsDisabled(children);
+                    
+                    // Tapping into the main application thread
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Add button becomes Save button
+                            addButton.setText("Save");
+                            addButton.setId("saveButton");
+                            // Edit button becomes Cancel button
+                            editButton.setText("Cancel");
+                            editButton.setId("cancelButton");
+                            // Can't use Delete button
+                            deleteButton.setDisable(true);
+                        }
+                    });
+                    
+                    break;
+                    
                 case "editButton":
-                    setEditMode(true);
+                    ApplicationState.setEditMode(true);
+                    ApplicationState.setCurrentOperation("Update");
           
                     setChildElementsDisabled(children);
                     
@@ -274,10 +303,19 @@ public class MainScreenController implements Initializable {
                     });
                 break;
                 case "saveButton":
-                    setEditMode(false);
-                    
+                    String appOperation = 
+                            ApplicationState.getCurrentOperation();
+                    ApplicationState.setEditMode(false);
                     setChildElementsDisabled(children);
                     
+                    try {
+                        Customer.addCustomerRecord(children);
+                    }
+                    catch(SQLException SqlEx) {
+                        SqlEx.printStackTrace();
+                    }
+                    
+                    ApplicationState.setCurrentOperation("View");
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
@@ -293,7 +331,7 @@ public class MainScreenController implements Initializable {
                     // Checking for Edit Mode to be enabled is a little 
                     // redundant as the Cancel Button only appears in Edit Mode
                     // but it's safe and logical, I feel.
-                    if(editMode) {
+                    if(ApplicationState.getEditMode()) {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Discard Unsaved Changes?");
                         alert.setHeaderText("**YOU MAY HAVE UNSAVED CHANGES!***");
@@ -306,7 +344,8 @@ public class MainScreenController implements Initializable {
                         Optional<ButtonType> result = alert.showAndWait();
                         
                         if(result.get() == yesButton) {
-                            setEditMode(false);
+                            ApplicationState.setEditMode(false);
+                            ApplicationState.setCurrentOperation("View");
                             setChildElementsDisabled(children);
                             
                         Platform.runLater(new Runnable() {
@@ -333,20 +372,16 @@ public class MainScreenController implements Initializable {
         children.forEach((child) -> {
                         if(child instanceof TextField) {
                             ((TextField) child).clear();
-                            System.out.println("Clearing TextFields");
                         }
                         else if(child instanceof CheckBox) {
                             ((CheckBox) child).setSelected(false);
-                            System.out.println("Clearing Check Boxes");
                         }
                         else if(child instanceof DatePicker) {
                             ((DatePicker) child).setValue(null);
-                            System.out.println("Clearing Date Picker");
                         }
                         else if(child instanceof ChoiceBox) {
                             ((ChoiceBox) child).getSelectionModel().
                                                 clearSelection();
-                            System.out.println("Clearing Choice Boxes");
                         }
                     });
     }
