@@ -76,6 +76,10 @@ public class CustomersController implements Initializable {
     
     private final ObservableList customers = 
             FXCollections.observableArrayList();
+    
+    private ResultSet allCitiesResult = null;
+    private ResultSet allCountriesResult = null;
+    
     /**
      * Initializes the controller class.
      */
@@ -136,17 +140,30 @@ public class CustomersController implements Initializable {
         custTable.getSelectionModel().selectFirst();
         Customer cust = custTable.getSelectionModel().getSelectedItem();
         fillCustomerForm(cust);
+        
+        custTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldSelection, newSelection) ->{
+                    if(newSelection != null) {
+                        Customer selected = newSelection;
+                        fillCustomerForm(selected);
+                    }
+                });
     }    
     
     private void fillCustomerForm(Customer obj) {
-        String allCities = "SELECT city FROM city ORDER BY city;";
-        String allCounrties = "SELECT country FROM country ORDER BY country;";
-        SQLConnectionHandler sql = new SQLConnectionHandler();
+        
         Address customerAddress = obj.getCustomerAddress();
         
-        ResultSet allCitiesResult = sql.executeQuery(allCities);
-        ResultSet allCountriesResult = sql.executeQuery(allCounrties);
-        
+        if(allCitiesResult == null || allCountriesResult == null) {
+            
+            String allCities = "SELECT city FROM city ORDER BY city;";
+            String allCounrties = "SELECT country FROM country ORDER BY country;";
+            SQLConnectionHandler sql = new SQLConnectionHandler();
+            
+            allCitiesResult = sql.executeQuery(allCities);
+            allCountriesResult = sql.executeQuery(allCounrties);
+            
+        }
         try {
             while(allCitiesResult.next()) {
                 cityChoice.getItems().add(allCitiesResult.getString("city"));
@@ -175,5 +192,17 @@ public class CustomersController implements Initializable {
         addr2Field.setText(customerAddress.getAddressField2());
         zipField.setText(customerAddress.getPostalCode());
         
+    }
+    
+    public ObservableList getCustomersList() {
+        return this.customers;
+    }
+    
+    public TableView<Customer> getCustomersTableView() {
+        return this.custTable;
+    }
+    
+    public void refreshCustomersTableView() {
+        this.custTable.refresh();
     }
 }

@@ -285,6 +285,9 @@ public class Customer {
             catch(SQLException SqlEx) {
                 SqlEx.printStackTrace();
             }
+            finally {
+                sql.closeSqlConnection();
+            }
             cust = new Customer(custId, name, active, addrId);
             cust.getCustomerAddress();
         }

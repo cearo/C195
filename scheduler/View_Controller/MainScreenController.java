@@ -21,6 +21,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -33,6 +34,7 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
@@ -309,12 +311,38 @@ public class MainScreenController implements Initializable {
                     setChildElementsDisabled(children);
                     
                     try {
-                        Customer.addCustomerRecord(children);
+                        Customer cust = Customer.addCustomerRecord(children);
+                        
+                        FXMLLoader loader = new FXMLLoader();
+                        loader.setLocation(getClass().getResource(
+                                Scheduler.BASE_FOLDER_PATH + "Customers.fxml"));
+                        Parent root = loader.load();
+                        CustomersController custController =
+                                loader.getController();
+                        ObservableList custList = 
+                                custController.getCustomersList();
+                        
+                        
+                        TableView<Customer> custTable = 
+                                custController.getCustomersTableView();
+                        custTable.getItems().add(cust);
+                        custTable.getSelectionModel().select(cust);
+                        custController.refreshCustomersTableView();
+//                        Tab selectedTab = 
+//                                tabPane.getSelectionModel().getSelectedItem();
+//                        
+//                        Scene scene = new Scene(root);
+//                        Stage stage = (Stage) mainWindow.getScene().getWindow();
+//                        stage.setScene(scene);
+//                        stage.show();
                     }
                     catch(SQLException SqlEx) {
                         SqlEx.printStackTrace();
                     }
-                    
+                    catch(IOException IOEx) {
+                        IOEx.printStackTrace();
+                    }
+                    finally {
                     ApplicationState.setCurrentOperation("View");
                     Platform.runLater(new Runnable() {
                         @Override
@@ -326,7 +354,9 @@ public class MainScreenController implements Initializable {
                             deleteButton.setDisable(false);
                         }
                     });
-                break;
+                
+                    }
+                    break;
                 case "cancelButton":
                     // Checking for Edit Mode to be enabled is a little 
                     // redundant as the Cancel Button only appears in Edit Mode
