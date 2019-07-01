@@ -10,7 +10,7 @@
 
 <AnchorPane id="AnchorPane" prefHeight="283.0" prefWidth="430.0" style="-fx-background-color: #b7cee2; -fx-border-color: #90b2d1; -fx-border-width: 3px;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scheduler.View_Controller.LoginController">
    <children>
-      <TextField layoutX="142.0" layoutY="107.0" prefHeight="25.0" prefWidth="168.0" />
+      <TextField id="userNameField" fx:id="userNameField" layoutX="142.0" layoutY="107.0" prefHeight="25.0" prefWidth="168.0" />
       <Label layoutX="76.0" layoutY="111.0" text="Username:">
          <font>
             <Font name="Lucida Sans Regular" size="12.0" />
@@ -19,11 +19,11 @@
          <font>
             <Font name="Lucida Sans Regular" size="12.0" />
          </font></Label>
-      <Button layoutX="245.0" layoutY="225.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="65.0" text="Login">
+      <Button id="loginButton" fx:id="loginButton" layoutX="245.0" layoutY="225.0" mnemonicParsing="false" onAction="#loginButtonHandler" prefHeight="34.0" prefWidth="65.0" text="Login">
          <font>
             <Font name="Lucida Sans Regular" size="12.0" />
          </font></Button>
-      <Button layoutX="320.0" layoutY="225.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="65.0" text="Cancel">
+      <Button id="cancelButton" fx:id="cancelButton" layoutX="320.0" layoutY="225.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="65.0" text="Cancel">
          <font>
             <Font name="Lucida Sans Regular" size="12.0" />
          </font></Button>
@@ -31,7 +31,7 @@
          <font>
             <Font name="Microsoft JhengHei UI" size="16.0" />
          </font></Label>
-      <PasswordField layoutX="142.0" layoutY="148.0" prefHeight="25.0" prefWidth="168.0" />
+      <PasswordField id="passwordField" fx:id="passwordField" layoutX="142.0" layoutY="148.0" prefHeight="25.0" prefWidth="168.0" />
    </children>
    <effect>
       <Blend mode="COLOR_BURN" />

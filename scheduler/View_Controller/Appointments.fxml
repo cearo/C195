@@ -12,28 +12,39 @@
       <Blend />
    </effect>
    <children>
-      <TextField disable="true" layoutX="92.0" layoutY="328.0" prefHeight="25.0" prefWidth="98.0" />
-      <TextField disable="true" layoutX="246.0" layoutY="328.0" prefHeight="25.0" prefWidth="269.0" />
-      <TextField disable="true" layoutX="92.0" layoutY="377.0" prefHeight="25.0" prefWidth="458.0" />
-      <TextField disable="true" layoutX="92.0" layoutY="424.0" prefHeight="25.0" prefWidth="458.0" />
-      <Label layoutX="43.0" layoutY="332.0" text="ID" />
-      <Label layoutX="34.0" layoutY="381.0" text="Address" />
-      <Label layoutX="206.0" layoutY="332.0" text="Name" />
-      <Label layoutX="35.0" layoutY="428.0" text="Address 2" />
-      <CheckBox disable="true" layoutX="421.0" layoutY="539.0" mnemonicParsing="false" text="Active Customer" />
-      <Label layoutX="567.0" layoutY="428.0" text="State" />
-      <Label layoutX="570.0" layoutY="381.0" text="City" />
-      <TextField disable="true" layoutX="92.0" layoutY="472.0" prefHeight="25.0" prefWidth="130.0" />
-      <Label layoutX="35.0" layoutY="476.0" text="Zip Code" />
-      <Label layoutX="300.0" layoutY="476.0" text="Country" />
-      <Label layoutX="363.0" layoutY="14.0" text="Appointments" />
-      <TextField disable="true" layoutX="614.0" layoutY="328.0" prefHeight="25.0" prefWidth="155.0" />
-      <Label layoutX="529.0" layoutY="332.0" text="Phone Number" />
-      <ListView layoutX="45.0" layoutY="38.0" prefHeight="269.0" prefWidth="733.0" />
-      <DatePicker disable="true" layoutX="92.0" layoutY="535.0" />
-      <ChoiceBox disable="true" layoutX="613.0" layoutY="377.0" prefHeight="25.0" prefWidth="155.0" />
-      <ChoiceBox disable="true" layoutX="614.0" layoutY="424.0" prefHeight="25.0" prefWidth="155.0" />
-      <ChoiceBox disable="true" layoutX="355.0" layoutY="472.0" prefHeight="25.0" prefWidth="174.0" />
-      <Label layoutX="40.0" layoutY="539.0" prefHeight="17.0" prefWidth="43.0" text="Date" />
+      <TextField id="idField" fx:id="idField" disable="true" editable="false" layoutX="75.0" layoutY="342.0" prefHeight="25.0" prefWidth="98.0" />
+      <Label layoutX="26.0" layoutY="346.0" text="ID" />
+      <Label layoutX="190.0" layoutY="346.0" text="Customer" />
+      <Label layoutX="359.0" layoutY="22.0" text="Appointments" />
+      <TextField id="appCustPhoneField" fx:id="appCustPhoneField" disable="true" layoutX="614.0" layoutY="342.0" prefHeight="25.0" prefWidth="155.0" />
+      <Label layoutX="529.0" layoutY="346.0" text="Phone Number" />
+      <DatePicker id="appDatePicker" fx:id="appDatePicker" disable="true" layoutX="75.0" layoutY="380.0" />
+      <Label layoutX="25.0" layoutY="384.0" prefHeight="17.0" prefWidth="43.0" text="Date" />
+      <TextArea id="appDescriptionArea" fx:id="appDescriptionArea" disable="true" layoutX="91.0" layoutY="476.0" prefHeight="142.0" prefWidth="659.0" />
+      <Label layoutX="381.0" layoutY="459.0" text="Description" />
+      <Label layoutX="270.0" layoutY="384.0" text="Location" />
+      <TextField id="appContactField" fx:id="appContactField" disable="true" layoutX="543.0" layoutY="428.0" />
+      <Label layoutX="494.0" layoutY="432.0" text="Contact" />
+      <ChoiceBox id="appLocationChoice" fx:id="appLocationChoice" disable="true" layoutX="324.0" layoutY="380.0" prefWidth="150.0" />
+      <ChoiceBox id="appTypeChoice" fx:id="appTypeChoice" disable="true" layoutX="536.0" layoutY="380.0" prefWidth="150.0" />
+      <Label layoutX="498.0" layoutY="384.0" text="Type" />
+      <TextField id="appTitleField" fx:id="appTitleField" alignment="CENTER" disable="true" layoutX="155.0" layoutY="293.0" prefHeight="25.0" prefWidth="493.0" />
+      <Label layoutX="385.0" layoutY="275.0" text="Title" />
+      <Separator layoutY="304.0" prefHeight="4.0" prefWidth="155.0" />
+      <Separator layoutX="648.0" layoutY="304.0" prefHeight="4.0" prefWidth="155.0" />
+      <TableView id="appTable" fx:id="appTable" layoutX="28.0" layoutY="54.0" prefHeight="200.0" prefWidth="749.0">
+        <columns>
+          <TableColumn id="appStartCol" fx:id="appStartCol" prefWidth="198.0" text="Start" />
+          <TableColumn id="appEndCol" fx:id="appEndCol" prefWidth="184.0" text="End" />
+          <TableColumn id="appTitleCol" fx:id="appTitleCol" prefWidth="250.0" text="Title" />
+          <TableColumn id="appLocCol" fx:id="appLocCol" prefWidth="116.0" text="Location" />
+        </columns>
+      </TableView>
+      <Label layoutX="242.0" layoutY="432.0" text="Duration" />
+      <Label layoutX="447.0" layoutY="432.0" text="(mins)" />
+      <TextField id="appDurationField" fx:id="appDurationField" disable="true" layoutX="294.0" layoutY="428.0" />
+      <ComboBox id="custCombo" fx:id="custCombo" disable="true" layoutX="258.0" layoutY="342.0" prefHeight="25.0" prefWidth="256.0" />
+      <Label layoutX="14.0" layoutY="432.0" text="Start Time" />
+      <ComboBox id="startCombo" fx:id="startCombo" disable="true" layoutX="75.0" layoutY="428.0" prefWidth="150.0" />
    </children>
 </AnchorPane>

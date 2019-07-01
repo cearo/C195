@@ -8,12 +8,17 @@ package scheduler.View_Controller;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.TimeZone;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -27,23 +32,28 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import scheduler.Model.Appointment;
 import scheduler.Scheduler;
 import scheduler.Model.Customer;
 import scheduler.util.ApplicationState;
 import scheduler.util.SQLConnectionHandler;
+
 /**
  * FXML Controller class
  *
@@ -73,7 +83,7 @@ public class MainScreenController implements Initializable {
     private Button deleteButton;
     @FXML
     private Button deleteButton1;
-    
+
     // selectionModel is used to gather info about what the user is doing
     private SingleSelectionModel selectionModel;
     /* 
@@ -87,23 +97,42 @@ public class MainScreenController implements Initializable {
            out of Edit Mode before clearing the form.
         - Exiting the application
         -- Again, Discard Changes prompt.
-    */
+     */
     private static boolean editMode;
+
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-       selectionModel = tabPane.getSelectionModel();
-       ApplicationState.setEditMode(false);
-       ApplicationState.setCurrentOperation("View");
-    }    
+        selectionModel = tabPane.getSelectionModel();
+        String getUserInfo = "SELECT * FROM user WHERE userId = ?;";
+        SQLConnectionHandler sql = new SQLConnectionHandler();
+        Connection conn = sql.getSqlConnection();
+
+        try {
+            PreparedStatement pstmnt = conn.prepareStatement(getUserInfo);
+            pstmnt.setInt(1, 1);
+            ResultSet userResult = pstmnt.executeQuery();
+
+            if (userResult.next()) {
+                ApplicationState.setCurrUserId(userResult.getInt("userId"));
+                ApplicationState.setCurrentUser(
+                        userResult.getString("userName"));
+            }
+        } catch (SQLException SqlEx) {
+            SqlEx.printStackTrace();
+        }
+
+        System.out.println(ApplicationState.getCurrUserId());
+        System.out.println(ApplicationState.getCurrentUser());
+    }
 
     @FXML
     private void customersLinkHandler(ActionEvent event) {
 
         tabHandler("Customers");
-        
+
     }
 
     @FXML
@@ -115,69 +144,94 @@ public class MainScreenController implements Initializable {
     @FXML
     private void usersLinkHandler(ActionEvent event) {
 
-         tabHandler("Users");
+        tabHandler("Users");
     }
 
     @FXML
     private void reportsLinkHandler(ActionEvent event) {
-        
+
         tabHandler("Reports");
     }
 
     @FXML
     private void addButtonHandler(ActionEvent event) {
         // The current selected UI object
-        Object selectedItem = selectionModel.getSelectedItem();
+        Tab selectedItem = (Tab) selectionModel.getSelectedItem();
+        String tabId = selectedItem.getId();
 
-        if(selectedItem instanceof Tab) {
+        if (!tabId.equals("welcome")) {
             editModeHandler(event);
         }
     }
 
     @FXML
     private void editButtonHandler(ActionEvent event) {
-        Object selectedItem = selectionModel.getSelectedItem();
-        
-        if(selectedItem instanceof Tab) {
+        Tab selectedItem = (Tab) selectionModel.getSelectedItem();
+        String tabId = selectedItem.getId();
+
+        if (!tabId.equals("welcome")) {
             editModeHandler(event);
         }
-
     }
 
     @FXML
     private void deleteButtonHandler(ActionEvent event) {
-       Object selectedItem = selectionModel.getSelectedItem();
-       
-       
+        Tab selectedItem = (Tab) selectionModel.getSelectedItem();
+        String tabId = selectedItem.getId();
+        Scene scene = addButton.getScene();
+
+        switch (tabId) {
+            case "Customers":
+                TableView<Customer> custTable
+                        = (TableView<Customer>) scene.lookup("#custTable");
+                Customer cust = custTable.getSelectionModel().getSelectedItem();
+                cust.deleteCustomerRecord();
+                custTable.getItems().remove(cust);
+                custTable.refresh();
+                Customer firstCust = custTable.getItems().get(0);
+                custTable.getSelectionModel().select(firstCust);
+                custTable.scrollTo(0);
+                break;
+            
+            case "Appointments":
+                TableView<Appointment> appTable = 
+                        (TableView<Appointment>) scene.lookup("#appTable");
+                Appointment app = appTable.getSelectionModel().
+                        getSelectedItem();
+                app.deleteAppointmentRecord();
+                appTable.getItems().remove(app);
+                appTable.refresh();
+                appTable.getSelectionModel().selectFirst();
+                appTable.scrollTo(0);
+        }
+
     }
 
     @FXML
     private void closeButtonHandler(ActionEvent event) {
-        Object selectedItem = selectionModel.getSelectedItem();
-        
-        if(selectedItem instanceof Tab) {
-            if(!ApplicationState.getEditMode()) {
-                tabPane.getTabs().remove((Tab) selectedItem);
-            }
+        Tab selectedItem = (Tab) selectionModel.getSelectedItem();
+
+        if (!ApplicationState.getEditMode()) {
+            tabPane.getTabs().remove(selectedItem);
         }
-        
+
     }
-    
+
     private void tabHandler(String tabName) {
         boolean doesTabExist = false;
         ObservableList<Tab> tabList = tabPane.getTabs();
         Tab tab;
-        for(Tab i : tabList) {
+        for (Tab i : tabList) {
             String tabId = i.getId();
-            if(tabId != null && tabId.equals(tabName)) {
+            if (tabId != null && tabId.equals(tabName)) {
                 doesTabExist = true;
                 tab = i;
                 selectionModel.select(tab);
                 break;
             }
         }
-        
-        if(!doesTabExist) {
+
+        if (!doesTabExist) {
             tab = new Tab(tabName);
             tab.setId(tabName);
             FXMLLoader loader = new FXMLLoader();
@@ -185,10 +239,9 @@ public class MainScreenController implements Initializable {
                 AnchorPane root = loader.load(getClass().getResource(
                         Scheduler.BASE_FOLDER_PATH + tabName + ".fxml"));
                 tab.setContent(root);
-            }
-            catch(IOException ioEX) {
-                System.out.println("Issue loading " + 
-                        Scheduler.BASE_FOLDER_PATH + tabName + ".fxml");
+            } catch (IOException ioEX) {
+                System.out.println("Issue loading "
+                        + Scheduler.BASE_FOLDER_PATH + tabName + ".fxml");
                 ioEX.printStackTrace();
             }
             tabPane.getTabs().add(tab);
@@ -199,8 +252,8 @@ public class MainScreenController implements Initializable {
 //    public static void setEditMode(boolean mode) {
 //        editMode = mode;
 //    }
-    
-   /*
+
+    /*
         This method enables disabled form elements and disables enabled ones.
         The one exception are the Labels as they should always be enabled.
     
@@ -217,24 +270,27 @@ public class MainScreenController implements Initializable {
         child.setDisable() however, that felt more clever than clear. For 
         clarity's sake, I explicity stated the boolean values 
         passed to the method.
-    */
-    
+     */
     public void setChildElementsDisabled(ObservableList<Node> children) {
-        
+
         children.forEach((child) -> {
-            if(child.isDisabled()) {
+            if (child.isDisabled() && !(child instanceof Separator)) {
                 // Enabling all disabled children
-                child.setDisable(false);
-                
-            }
-            // I don't want to disable Labels
-            else if(!(child instanceof Label)){
-                // Disabling List Views
+                if (!(child.getId().equals("idField"))
+                        && !child.getId().equals("appCustPhoneField")) {
+                    child.setDisable(false);
+                }
+
+            } // I don't want to disable Labels
+            else if (!(child instanceof Label) && !(child instanceof Separator)) {
+                System.out.println(child.getId());
+                System.out.println(child.isDisabled());
+                // Disabling Table Views
                 child.setDisable(true);
             }
         });
     }
-    
+
     public void editModeHandler(ActionEvent event) {
         // The current selected UI object
         Object selectedItem = selectionModel.getSelectedItem();
@@ -242,30 +298,28 @@ public class MainScreenController implements Initializable {
         AnchorPane pageContent = (AnchorPane) ((Tab) selectedItem).getContent();
         // Collecting the individual elements on the page
         ObservableList<Node> children = pageContent.getChildren();
-        
-        if(event.getSource() instanceof Button) {
+
+        Comparator<Appointment> startDateComp = new Comparator<Appointment>() {
+
+            @Override
+            public int compare(Appointment app1, Appointment app2) {
+                return app1.getStartTime().compareTo(app2.getStartTime());
+            }
+        };
+
+        if (event.getSource() instanceof Button) {
             Button buttonPressed = (Button) event.getSource();
             String buttonId = buttonPressed.getId();
-            
+
             switch (buttonId) {
-                /*
-                   The lack of a break; statement in the addButton case is 
-                   intentional. The Add and Edit buttons share very similar
-                   actions. The Add button has the additional responsibility of
-                   clearing the form data to prepare for a new addition. Other 
-                   than that, the buttons perform exactly the same:
-                        - set editMode to true
-                        - Update the Add Button's ID and Text to Save
-                        - Update the Edit Button's ID and Text to Cancel
-                        - Disable the Delete Button
-                */
+
                 case "addButton":
                     clearFormData(children);
                     ApplicationState.setEditMode(true);
                     ApplicationState.setCurrentOperation("Add");
-                    
+
                     setChildElementsDisabled(children);
-                    
+
                     // Tapping into the main application thread
                     Platform.runLater(new Runnable() {
                         @Override
@@ -280,15 +334,15 @@ public class MainScreenController implements Initializable {
                             deleteButton.setDisable(true);
                         }
                     });
-                    
+
                     break;
-                    
+
                 case "editButton":
                     ApplicationState.setEditMode(true);
                     ApplicationState.setCurrentOperation("Update");
-          
+
                     setChildElementsDisabled(children);
-                    
+
                     // Tapping into the main application thread
                     Platform.runLater(new Runnable() {
                         @Override
@@ -303,65 +357,171 @@ public class MainScreenController implements Initializable {
                             deleteButton.setDisable(true);
                         }
                     });
-                break;
+                    break;
                 case "saveButton":
-                    String appOperation = 
-                            ApplicationState.getCurrentOperation();
+                    String appOperation
+                            = ApplicationState.getCurrentOperation();
                     ApplicationState.setEditMode(false);
                     setChildElementsDisabled(children);
-                    
-                    try {
-                        Customer cust = Customer.addCustomerRecord(children);
-                        
-                        FXMLLoader loader = new FXMLLoader();
-                        loader.setLocation(getClass().getResource(
-                                Scheduler.BASE_FOLDER_PATH + "Customers.fxml"));
-                        Parent root = loader.load();
-                        CustomersController custController =
-                                loader.getController();
-                        ObservableList custList = 
-                                custController.getCustomersList();
-                        
-                        
-                        TableView<Customer> custTable = 
-                                custController.getCustomersTableView();
-                        custTable.getItems().add(cust);
-                        custTable.getSelectionModel().select(cust);
-                        custController.refreshCustomersTableView();
-//                        Tab selectedTab = 
-//                                tabPane.getSelectionModel().getSelectedItem();
-//                        
-//                        Scene scene = new Scene(root);
-//                        Stage stage = (Stage) mainWindow.getScene().getWindow();
-//                        stage.setScene(scene);
-//                        stage.show();
-                    }
-                    catch(SQLException SqlEx) {
-                        SqlEx.printStackTrace();
-                    }
-                    catch(IOException IOEx) {
-                        IOEx.printStackTrace();
-                    }
-                    finally {
-                    ApplicationState.setCurrentOperation("View");
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            addButton.setText("Add");
-                            addButton.setId("addButton");
-                            editButton.setText("Edit");
-                            editButton.setId("editButton");
-                            deleteButton.setDisable(false);
+                    Tab selectedTab
+                            = tabPane.getSelectionModel().getSelectedItem();
+                    String tabId = selectedTab.getId();
+
+                    if (appOperation.equals("Add")
+                            && tabId.equals("Customers")) {
+                        try {
+                            Customer cust
+                                    = Customer.addCustomerRecord(children);
+
+//                            FXMLLoader loader = new FXMLLoader();
+//                            loader.setLocation(getClass().getResource(
+//                                    Scheduler.BASE_FOLDER_PATH + 
+//                                            "Customers.fxml"));
+//                            Parent root = loader.load();
+//                            CustomersController custController =
+//                                    loader.getController();
+//                            ObservableList custList = 
+//                                    custController.getCustomersList();
+//
+//
+//                            TableView<Customer> custTable = 
+//                                    custController.getCustomersTableView();
+//                            custTable.getItems().add(cust);
+//                            custTable.getSelectionModel().select(cust);
+//                            custController.refreshCustomersTableView();
+                            //                        Tab selectedTab = 
+                            //                                tabPane.getSelectionModel().getSelectedItem();
+                            //                        
+                            //                        Scene scene = new Scene(root);
+                            //                        Stage stage = (Stage) mainWindow.getScene().getWindow();
+                            //                        stage.setScene(scene);
+                            //                        stage.show();
+                            Scene scene = addButton.getScene();
+                            TableView<Customer> custTable
+                                    = (TableView<Customer>) scene.lookup(
+                                            "#custTable");
+                            custTable.getItems().add(cust);
+                            custTable.refresh();
+                            custTable.getSelectionModel().select(cust);
+                        } catch (SQLException SqlEx) {
+                            SqlEx.printStackTrace();
+                        } //                        catch(IOException IOEx) {
+                        //                            IOEx.printStackTrace();
+                        //                        }
+                        finally {
+                            ApplicationState.setCurrentOperation("View");
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    addButton.setText("Add");
+                                    addButton.setId("addButton");
+                                    editButton.setText("Edit");
+                                    editButton.setId("editButton");
+                                    deleteButton.setDisable(false);
+                                }
+                            });
+
                         }
-                    });
-                
+                    } else if (appOperation.equals("Update")
+                            && tabId.equals("Customers")) {
+                        try {
+                            Scene scene = addButton.getScene();
+                            TableView<Customer> custTable
+                                    = (TableView<Customer>) scene.lookup(
+                                            "#custTable");
+
+                            Customer selectedCustomer
+                                    = custTable.getSelectionModel().
+                                            getSelectedItem();
+                            selectedCustomer.updateCustomerRecord(children);
+                            custTable.refresh();
+                        } catch (SQLException SqlEx) {
+                            SqlEx.printStackTrace();
+                        } finally {
+                            ApplicationState.setCurrentOperation("View");
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    addButton.setText("Add");
+                                    addButton.setId("addButton");
+                                    editButton.setText("Edit");
+                                    editButton.setId("editButton");
+                                    deleteButton.setDisable(false);
+                                }
+                            });
+                        }
+                    } else if (appOperation.equals("Add")
+                            && tabId.equals("Appointments")) {
+                        try {
+                            Appointment newApp
+                                    = Appointment.addAppointmentRecord(children);
+                            newApp.setEndTimeCalendarFormatted();
+                            newApp.setStartTimeCalendarFormatted();
+                            newApp.setStartTimeFormatted();
+                            newApp.setEndTimeFormatted();
+                            Scene scene = addButton.getScene();
+                            TableView<Appointment> appTable
+                                    = (TableView<Appointment>) scene.lookup(
+                                            "#appTable");
+                            appTable.getItems().add(newApp);
+                            appTable.refresh();
+                            FXCollections.sort(appTable.getItems(),
+                                    startDateComp);
+                            appTable.getSelectionModel().select(newApp);
+                            appTable.scrollTo(newApp);
+                        } catch (SQLException SqlEx) {
+                            SqlEx.printStackTrace();
+                        } finally {
+                            ApplicationState.setCurrentOperation("View");
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    addButton.setText("Add");
+                                    addButton.setId("addButton");
+                                    editButton.setText("Edit");
+                                    editButton.setId("editButton");
+                                    deleteButton.setDisable(false);
+                                }
+                            });
+                        }
+                    } else if (appOperation.equals("Update")
+                            && tabId.equals("Appointments")) {
+                        Scene scene = addButton.getScene();
+                        TableView<Appointment> appTable
+                                = (TableView<Appointment>) scene.lookup(
+                                        "#appTable");
+                        Appointment appUpdate = appTable.
+                                getSelectionModel().getSelectedItem();
+                        try {
+                            appUpdate.updateAppointmentRecord(children);
+                        } catch (SQLException SqlEx) {
+                            SqlEx.printStackTrace();
+                        } finally {
+                            ApplicationState.setCurrentOperation("View");
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    addButton.setText("Add");
+                                    addButton.setId("addButton");
+                                    editButton.setText("Edit");
+                                    editButton.setId("editButton");
+                                    deleteButton.setDisable(false);
+                                }
+                            });
+                        }
+
+                        FXCollections.sort(appTable.getItems(),
+                                startDateComp);
+//                            appTable.refresh();
+//                            appTable.sort();
+//                            appTable.getSelectionModel().select(appUpdate);
                     }
                     break;
                 case "cancelButton":
                     // Checking for Edit Mode to be enabled is a little 
                     // redundant as the Cancel Button only appears in Edit Mode
                     // but it's safe and logical, I feel.
-                    if(ApplicationState.getEditMode()) {
+                    if (ApplicationState.getEditMode()) {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Discard Unsaved Changes?");
                         alert.setHeaderText("**YOU MAY HAVE UNSAVED CHANGES!***");
@@ -372,47 +532,48 @@ public class MainScreenController implements Initializable {
                         ButtonType noButton = new ButtonType("No");
                         alert.getButtonTypes().setAll(yesButton, noButton);
                         Optional<ButtonType> result = alert.showAndWait();
-                        
-                        if(result.get() == yesButton) {
+
+                        if (result.get() == yesButton) {
                             ApplicationState.setEditMode(false);
                             ApplicationState.setCurrentOperation("View");
                             setChildElementsDisabled(children);
-                            
-                        Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            addButton.setText("Add");
-                            addButton.setId("addButton");
-                            editButton.setText("Edit");
-                            editButton.setId("editButton");
-                            deleteButton.setDisable(false);
-                        }
-                    });
-                        }
-                        else{
+
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    addButton.setText("Add");
+                                    addButton.setId("addButton");
+                                    editButton.setText("Edit");
+                                    editButton.setId("editButton");
+                                    deleteButton.setDisable(false);
+                                }
+                            });
+                        } else {
                             alert.close();
                         }
                     }
                     break;
-                    
+
+            }
         }
     }
-    }
+
     public void clearFormData(ObservableList<Node> children) {
         children.forEach((child) -> {
-                        if(child instanceof TextField) {
-                            ((TextField) child).clear();
-                        }
-                        else if(child instanceof CheckBox) {
-                            ((CheckBox) child).setSelected(false);
-                        }
-                        else if(child instanceof DatePicker) {
-                            ((DatePicker) child).setValue(null);
-                        }
-                        else if(child instanceof ChoiceBox) {
-                            ((ChoiceBox) child).getSelectionModel().
-                                                clearSelection();
-                        }
-                    });
+            if (child instanceof TextField) {
+                ((TextField) child).clear();
+            } else if (child instanceof CheckBox) {
+                ((CheckBox) child).setSelected(false);
+            } else if (child instanceof DatePicker) {
+                ((DatePicker) child).setValue(null);
+            } else if (child instanceof ChoiceBox) {
+                ((ChoiceBox) child).getSelectionModel().
+                        clearSelection();
+            } else if (child instanceof TextArea) {
+                ((TextArea) child).setText(null);
+            } else if (child instanceof ComboBox) {
+                ((ComboBox) child).setValue(null);
+            }
+        });
     }
 }

@@ -303,41 +303,200 @@ public class Customer {
         return cust;
     }
     
-    public void updateCustomerRecord(int id, 
-                                     String customerName, int isActive) 
-    {
-        this.setId(id);
-        this.setName(customerName);
-        this.setActiveState(isActive);
+    public void updateCustomerRecord(ObservableList<Node> children) 
+            throws IllegalStateException, SQLException {
         
-        int currentId = this.getId();
-        String currentName = this.getName();
-        int currentActiveState = this.getActiveState();
+        String appOperation = ApplicationState.getCurrentOperation();
+        String currUser = ApplicationState.getCurrentUser();
+        Address custAddress = this.getCustomerAddress();
         
-        String updateQuery = 
-              String.format("UPDATE customer SET customerName=%s, active=%d"
-              + "WHERE id=%d;", currentName, currentActiveState, 
-              currentId);
-        
-        SQLConnectionHandler sql = new SQLConnectionHandler();
-        
-        try {
+        if(appOperation.equals("Update")) {
+            for(int i = 0; i < children.size(); i++) {
+                Node child = children.get(i);
+                String childId = child.getId();
+                
+                if(child instanceof TextField) {
+                    
+                    String childText = ((TextField) child).getText();
+                    
+                    
+                    switch(childId) {
+                            
+                        case "CustName":
+                            this.setName(childText);
+                            break;
+                            
+                        case "CustPhone":
+                             custAddress.setPhoneNumber(childText);
+                            break;
+                            
+                        case "CustAddr1":
+                            custAddress.setAddressField1(childText);
+                            break;
+                            
+                        case "CustAddr2":
+                            custAddress.setAddressField2(childText);
+                            break;
+                            
+                        case "CustZip":
+                            custAddress.setPostalCode(childText);
+                            break;
+                    }
+                    
+                }
+                else if(child instanceof CheckBox) {
+                    
+                    boolean isSelected = ((CheckBox) child).isSelected();
+                    
+                    if(isSelected) {
+                        this.setActiveState(1);
+                    }
+                    else {
+                        this.setActiveState(0);
+                    }
+                }
+                else if(child instanceof ChoiceBox) {
+                    
+                    String selectedValue = 
+                            (String) ((ChoiceBox) child).getValue();
+                    String queryTemplate = 
+                            "SELECT ci.cityId AS cityId, ci.city AS city,"
+                            + "co.countryId as countryId, co.country AS country"
+                            + " FROM city ci INNER JOIN country co"
+                            + " ON(ci.countryId = co.countryId)"
+                            + " WHERE ci.city = '%s';";
+                    String currCityName = this.address.getCityName();
+                    String currCountryName = this.address.getCountryName();
+                    boolean valuesChanged = false;
+                    
+                    switch(childId) {
+                        
+                        case "CustCity":
+                             if(!currCityName.equals(selectedValue)) {
+                                 this.address.setCityName(selectedValue);
+                                 currCityName = this.address.getCityName();
+                                 valuesChanged = true;
+                             }
+                            break;
+                        
+                        case "CustCountry":
+                            if(!currCountryName.equals(selectedValue)) {
+                                this.address.setCountryName(selectedValue);
+                                currCountryName = this.address.getCountryName();
+                                valuesChanged = true;
+                            }
+                            break;
+                    }
+                    
+                    if(valuesChanged) {
+                        String cityAndCountryInfo = 
+                                String.format(queryTemplate, currCityName);
+                        SQLConnectionHandler sql = new SQLConnectionHandler();
+                        ResultSet result = sql.executeQuery(cityAndCountryInfo);
+                        if(result.next()) {
+                            try {
+                                int cityId = result.getInt("cityId");
+                                int countryId = result.getInt("countryId");
+                                
+                                this.address.setCityId(cityId);
+                                this.address.setCountryId(countryId);
+                            }
+                            catch(SQLException SqlEx) {
+                                String err = "There was an error when fetching"
+                                        + "City and Country information.";
+                                SQLException sqlEx = new SQLException(err);
+                                throw sqlEx;
+                            }
+                            finally {
+                                sql.closeSqlConnection();
+                            }
+                        }
+                    }
+                }
+            }
+            String updateAddress = "UPDATE address SET address=?, address2=?,"
+                    + "cityId=?, postalCode=?, phone=?, lastUpdate=?,"
+                    + "lastUpdateBy=? WHERE addressId = ?";
+            String updateCustomer = "UPDATE customer SET customerName=?,"
+                    + "addressId=?, active=?, lastUpdate=?, lastUpdateBy=? "
+                    + "WHERE customerId = ?";
+            String sqlTime = "SELECT NOW();";
+            Timestamp timestamp = null;
+            SQLConnectionHandler sql = new SQLConnectionHandler();
+            
+            ResultSet timeRes = sql.executeQuery(sqlTime);
+            
+            if(timeRes.next()) {
+                try {
+                    timestamp = timeRes.getTimestamp(1);
+                }
+                catch(SQLException SqlEx) {
+                    String err = "There was an error when fetching the SQL"
+                            + "time.";
+                    SQLException ex = new SQLException(err);
+                    throw ex;
+                }
+                finally {
+                    sql.closeSqlConnection();
+                }
+            }
+            
             Connection conn = sql.getSqlConnection();
-            Statement stmnt = conn.createStatement();
-            stmnt.executeUpdate(updateQuery);
+            PreparedStatement addrPstmnt = conn.prepareStatement(updateAddress);
+            
+            addrPstmnt.setString(1, this.address.getAddressField1());
+            addrPstmnt.setString(2, this.address.getAddressField2());
+            addrPstmnt.setInt(3, this.address.getCityId());
+            addrPstmnt.setString(4, this.address.getPostalCode());
+            addrPstmnt.setString(5, this.address.getPhoneNumber());
+            addrPstmnt.setTimestamp(6, timestamp);
+            addrPstmnt.setString(7, currUser);
+            addrPstmnt.setInt(8, this.address.getId());
+            
+            PreparedStatement custPstmnt = 
+                    conn.prepareStatement(updateCustomer);
+            
+            custPstmnt.setString(1, this.getName());
+            custPstmnt.setInt(2, this.address.getId());
+            custPstmnt.setInt(3, this.getActiveState());
+            custPstmnt.setTimestamp(4, timestamp);
+            custPstmnt.setString(5, currUser);
+            custPstmnt.setInt(6, this.getId());
+            
+            try {
+                addrPstmnt.executeUpdate();
+            }
+            catch(SQLException SqlEx) {
+                SqlEx.printStackTrace();
+                String err ="There was an error updating the Address record.";
+                SQLException ex = new SQLException(err);
+                throw ex;
+            }
+            try {
+                 custPstmnt.executeUpdate();
+            }
+            catch(SQLException SqlEx) {
+                SqlEx.printStackTrace();
+                String err = "There was an error updating the Customer record.";
+                SQLException ex = new SQLException(err);
+                throw ex;
+            }
+            
         }
-        catch(SQLException SqlEx) {
-            SqlEx.printStackTrace();
-        }
-        finally {
-            sql.closeSqlConnection();
+        else {
+            String errMsg = "Application state does not permit adding a new"
+                    + "customer record."
+                    + "\nEdit Mode = " + ApplicationState.getEditMode()
+                    + "\nOperation = " + ApplicationState.getCurrentOperation();
+            IllegalStateException ex = new IllegalStateException(errMsg);
+            throw ex;
         }
     }
     
     public void deleteCustomerRecord() {
-         int id = this.getId();
+         int custId = this.getId();
          String deleteQuery = String.format("DELETE FROM customer " 
-                            + "WHERE id=%d", id);
+                            + "WHERE customerId = %d", custId);
          
          SQLConnectionHandler sql = new SQLConnectionHandler();
          

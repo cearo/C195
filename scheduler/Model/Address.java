@@ -63,8 +63,8 @@ public class Address {
         return this.cityId;
     }
     
-    private void setCityId(int id) {
-        this.cityId = id;
+    public void setCityId(int cityId) {
+        this.cityId = cityId;
     }
     
     public String getPostalCode() {
@@ -87,12 +87,24 @@ public class Address {
         return this.countryName;
     }
     
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
+    }
+    
     public String getCityName() {
         return this.cityName;
     }
     
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+    
     public int getCountryId() {
         return this.countryId;
+    }
+    
+    public void setCountryId(int countryId) {
+        this.countryId = countryId;
     }
     
 }

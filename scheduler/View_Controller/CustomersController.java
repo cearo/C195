@@ -74,7 +74,7 @@ public class CustomersController implements Initializable {
     private final ObservableList custNames =
             FXCollections.observableArrayList();
     
-    private final ObservableList customers = 
+    private final ObservableList CUSTOMERS = 
             FXCollections.observableArrayList();
     
     private ResultSet allCitiesResult = null;
@@ -108,7 +108,7 @@ public class CustomersController implements Initializable {
                                                                      custAddId);
                         cust.getCustomerAddress();
 
-                        customers.add(cust);
+                        CUSTOMERS.add(cust);
                         custNames.add(cust.getName());
                     }
                     catch(SQLException SqlEx) {
@@ -135,14 +135,16 @@ public class CustomersController implements Initializable {
                 new PropertyValueFactory<>("id"));
         custNameCol.setCellValueFactory(
                 new PropertyValueFactory<>("customerName"));
-        custTable.setItems(customers);
+        custTable.setItems(CUSTOMERS);
         
         custTable.getSelectionModel().selectFirst();
         Customer cust = custTable.getSelectionModel().getSelectedItem();
         fillCustomerForm(cust);
         
+        System.out.println(custTable.getSelectionModel());
+        
         custTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) ->{
+                (obs, oldSelection, newSelection) -> {
                     if(newSelection != null) {
                         Customer selected = newSelection;
                         fillCustomerForm(selected);
@@ -157,28 +159,30 @@ public class CustomersController implements Initializable {
         if(allCitiesResult == null || allCountriesResult == null) {
             
             String allCities = "SELECT city FROM city ORDER BY city;";
-            String allCounrties = "SELECT country FROM country ORDER BY country;";
+            String allCounrties = 
+                    "SELECT country FROM country ORDER BY country;";
             SQLConnectionHandler sql = new SQLConnectionHandler();
             
             allCitiesResult = sql.executeQuery(allCities);
             allCountriesResult = sql.executeQuery(allCounrties);
-            
-        }
-        try {
-            while(allCitiesResult.next()) {
-                cityChoice.getItems().add(allCitiesResult.getString("city"));
-                cityChoice.setValue(obj.getCustomerAddress().getCityName());
+            try {
+                while(allCitiesResult.next()) {
+                    cityChoice.getItems().add(allCitiesResult.getString("city"));
+//                    cityChoice.setValue(customerAddress.getCityName());
+                }
+                while(allCountriesResult.next()) {
+                    countryChoice.getItems().add(
+                            allCountriesResult.getString("country"));
+//                    countryChoice.setValue(
+//                            customerAddress.getCountryName());
+                }
             }
-            while(allCountriesResult.next()) {
-                countryChoice.getItems().add(
-                        allCountriesResult.getString("country"));
-                countryChoice.setValue(
-                        obj.getCustomerAddress().getCountryName());
+            catch(SQLException SQLEx) {
+                SQLEx.printStackTrace();
             }
         }
-        catch(SQLException SQLEx) {
-            SQLEx.printStackTrace();
-        }
+        cityChoice.setValue(customerAddress.getCityName());
+        countryChoice.setValue(customerAddress.getCountryName());
         
         idField.setText(Integer.toString(obj.getId()));
         nameField.setText(obj.getName());
@@ -195,14 +199,18 @@ public class CustomersController implements Initializable {
     }
     
     public ObservableList getCustomersList() {
-        return this.customers;
+        return this.CUSTOMERS;
     }
-    
-    public TableView<Customer> getCustomersTableView() {
-        return this.custTable;
-    }
-    
-    public void refreshCustomersTableView() {
-        this.custTable.refresh();
-    }
+//    
+//    public TableView<Customer> getCustomersTableView() {
+//        return this.custTable;
+//    }
+//    
+//    public void refreshCustomersTableView() {
+//        this.custTable.refresh();
+//    }
+//    
+//    public Customer getSelectedCustomer() {
+//        return this.custTable.getSelectionModel().getSelectedItem();
+//    }
 }

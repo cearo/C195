@@ -31,7 +31,7 @@
          <children>
             <TabPane fx:id="tabPane" prefHeight="655.0" prefWidth="797.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
-                <Tab text="Untitled Tab 1" />
+                <Tab id="welcome" fx:id="welcomeTab" text="Welcome" />
               </tabs>
             </TabPane>
             <ToolBar layoutX="538.0" layoutY="662.0" prefHeight="40.0" prefWidth="259.0">

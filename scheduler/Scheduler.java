@@ -23,7 +23,7 @@ public class Scheduler extends Application {
     public void start(Stage primaryStage) {
         try{
             Parent root = FXMLLoader.load(getClass().getResource(
-                    BASE_FOLDER_PATH + "MainScreen.fxml"
+                    BASE_FOLDER_PATH + "Login.fxml"
                 )
             );
             Scene scene = new Scene(root);

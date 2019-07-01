@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane id="AnchorPane" prefHeight="629.0" prefWidth="802.0" style="-fx-background-color: #b7cee2;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="scheduler.View_Controller.ReportsController">
+   <children>
+      <Separator layoutY="99.0" prefWidth="802.0" />
+      <ChoiceBox id="reportChoice" fx:id="reportChoice" layoutX="303.0" layoutY="48.0" prefHeight="25.0" prefWidth="197.0" />
+      <Label layoutX="362.0" layoutY="23.0" text="Choose Report" />
+      <TextArea id="reportWindow" fx:id="reportWindow" editable="false" layoutX="25.0" layoutY="115.0" prefHeight="496.0" prefWidth="753.0" />
+   </children>
+</AnchorPane>
