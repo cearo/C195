@@ -46,5 +46,11 @@
       <ComboBox id="custCombo" fx:id="custCombo" disable="true" layoutX="258.0" layoutY="342.0" prefHeight="25.0" prefWidth="256.0" />
       <Label layoutX="14.0" layoutY="432.0" text="Start Time" />
       <ComboBox id="startCombo" fx:id="startCombo" disable="true" layoutX="75.0" layoutY="428.0" prefWidth="150.0" />
+      <RadioButton id="weekRadio" fx:id="weekRadio" layoutX="32.0" layoutY="31.0" mnemonicParsing="false" text="Week View">
+         <toggleGroup>
+            <ToggleGroup fx:id="calendarViewGroup" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton id="monthRadio" fx:id="monthRadio" layoutX="130.0" layoutY="31.0" mnemonicParsing="false" text="Month View" toggleGroup="$calendarViewGroup" />
    </children>
 </AnchorPane>

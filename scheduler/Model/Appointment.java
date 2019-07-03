@@ -39,22 +39,21 @@ import scheduler.util.SQLConnectionHandler;
  * @author Cory
  */
 public class Appointment {
-    private static final TimeZone SQL_TZ = 
-            ApplicationState.getDatabaseTimeZone();
+
+    private static final TimeZone SQL_TZ
+            = ApplicationState.getDatabaseTimeZone();
     private static final String SQL_TZ_ID = SQL_TZ.getID();
-    private static final String DT_CALENDAR_FORMAT = 
-            "EEE, MMM dd, yyyy " + "hh:mm:ss";
+    private static final String DT_CALENDAR_FORMAT
+            = "EEE, MMM dd, yyyy " + "hh:mm:ss";
     public static final String DT_EU_FORMAT = "dd/MM/yyyy";
     public static final String DT_USA_FORMAT = "MM/dd/yyyy";
     private static final String SQL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    private static final DateTimeFormatter SQL_DATE_FORMATTER = 
-            DateTimeFormatter.ofPattern(SQL_DATE_FORMAT).withZone(
+    private static final DateTimeFormatter SQL_DATE_FORMATTER
+            = DateTimeFormatter.ofPattern(SQL_DATE_FORMAT).withZone(
                     ZoneId.of(SQL_TZ_ID));
-    public static final SimpleDateFormat DT_LOCALE_FORMATTER = new 
-        SimpleDateFormat();
-    public static final SimpleDateFormat DT_CALENDAR_FORMATTER = 
-            new SimpleDateFormat(DT_CALENDAR_FORMAT);
-
+    public static final SimpleDateFormat DT_LOCALE_FORMATTER = new SimpleDateFormat();
+    public static final SimpleDateFormat DT_CALENDAR_FORMATTER
+            = new SimpleDateFormat(DT_CALENDAR_FORMAT);
 
     private final IntegerProperty id;
     private final IntegerProperty custId;
@@ -72,7 +71,6 @@ public class Appointment {
     private final StringProperty endCalFmt;
     private Customer customer;
     private Address customerAddress;
-    
 
     public Appointment(int id, int custId, int userId, String title,
             String location, String type, String contact, String desc,
@@ -226,14 +224,14 @@ public class Appointment {
     }
 
     public String getStartTimeFormatted() {
-        
-        String startFmt =  this.startTimeFmt.get();
-        
-        if(startFmt == null) {
+
+        String startFmt = this.startTimeFmt.get();
+
+        if (startFmt == null) {
             this.setStartTimeFormatted();
             startFmt = this.startTimeFmt.get();
         }
-        
+
         return startFmt;
     }
 
@@ -249,13 +247,13 @@ public class Appointment {
     }
 
     public String getStartTimeCalendarFormatted() {
-        String startFmt =  this.startCalFmt.get();
-        
-        if(startFmt == null) {
+        String startFmt = this.startCalFmt.get();
+
+        if (startFmt == null) {
             this.setStartTimeCalendarFormatted();
             startFmt = this.startCalFmt.get();
         }
-        
+
         return startFmt;
     }
 
@@ -283,13 +281,13 @@ public class Appointment {
     }
 
     public String getEndTimeFormatted() {
-        String endFmt =  this.endTimeFmt.get();
-        
-        if(endFmt == null) {
+        String endFmt = this.endTimeFmt.get();
+
+        if (endFmt == null) {
             this.setEndTimeFormatted();
             endFmt = this.endTimeFmt.get();
         }
-        
+
         return endFmt;
     }
 
@@ -306,12 +304,12 @@ public class Appointment {
 
     public String getEndTimeCalendarFormatted() {
         String endFmt = this.endCalFmt.get();
-        
-        if(endFmt == null) {
+
+        if (endFmt == null) {
             this.setEndTimeCalendarFormatted();
             endFmt = this.endCalFmt.get();
         }
-        
+
         return endFmt;
     }
 
@@ -382,7 +380,6 @@ public class Appointment {
         Appointment app = null;
         String appOperation = ApplicationState.getCurrentOperation();
         String currUser = ApplicationState.getCurrentUser();
-        
 
         if (appOperation.equals("Add")) {
             SQLConnectionHandler sql = new SQLConnectionHandler();
@@ -391,10 +388,9 @@ public class Appointment {
                     + "(customerId, userId, title, description, location,"
                     + "contact, type, start, end, createDate, createdBy)"
                     + "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?);";
-            PreparedStatement pstmnt = conn.prepareStatement(insertApp, 
+            PreparedStatement pstmnt = conn.prepareStatement(insertApp,
                     Statement.RETURN_GENERATED_KEYS);
-            
-            
+
             int appId = 0;
             int custId = 0;
             int userId = 0;
@@ -434,25 +430,25 @@ public class Appointment {
                             break;
                     }
                 }
-                
+
                 if (child instanceof TextArea) {
-                    
+
                     String childText = ((TextArea) child).getText();
                     appDesc = childText;
                 }
-                
+
                 if (child instanceof DatePicker) {
-                    
+
                     LocalDate childDate = ((DatePicker) child).getValue();
                     dpDate = childDate;
                 }
-                
+
                 if (child instanceof ChoiceBox) {
-                    
+
                     String childText = ((ChoiceBox<String>) child).getValue();
-                    
-                    switch(childId) {
-                        
+
+                    switch (childId) {
+
                         case "appTypeChoice":
                             appType = childText;
                             break;
@@ -461,27 +457,27 @@ public class Appointment {
                             break;
                     }
                 }
-                
+
                 if (child instanceof ComboBox) {
-                    
-                    switch(childId) {
-                        
+
+                    switch (childId) {
+
                         case "startCombo":
-                            String comboValue = 
-                                    ((ComboBox<String>) child).getValue();
+                            String comboValue
+                                    = ((ComboBox<String>) child).getValue();
                             startComboTime = LocalTime.parse(comboValue);
                             break;
                         case "custCombo":
-                            Customer cust = 
-                                    ((ComboBox<Customer>) child).getValue();
+                            Customer cust
+                                    = ((ComboBox<Customer>) child).getValue();
                             custId = cust.getId();
                             break;
                     }
                 }
             }
-            
+
             userId = ApplicationState.getCurrUserId();
-            
+
             pstmnt.setInt(1, custId);
             pstmnt.setInt(2, userId);
             pstmnt.setString(3, appTitle);
@@ -489,45 +485,41 @@ public class Appointment {
             pstmnt.setString(5, appLoc);
             pstmnt.setString(6, appContact);
             pstmnt.setString(7, appType);
-            
-            
-            
+
             String LocalDateTimeFmt = dpDate.atTime(startComboTime).
                     format(SQL_DATE_FORMATTER);
             LocalDateTime sqlStart = LocalDateTime.parse(LocalDateTimeFmt, SQL_DATE_FORMATTER);
-            
+
             LocalDateTime sqlEnd = sqlStart.plusMinutes(duration);
-            
+
             pstmnt.setObject(8, sqlStart);
             pstmnt.setObject(9, sqlEnd);
             pstmnt.setString(10, ApplicationState.getCurrentUser());
-            
+
             try {
                 int rowsAffected = pstmnt.executeUpdate();
-                
-                if(rowsAffected == 1) {
+
+                if (rowsAffected == 1) {
                     ResultSet key = pstmnt.getGeneratedKeys();
-                    if(key.next()) {
-                        appId = key.getInt(1);                        
+                    if (key.next()) {
+                        appId = key.getInt(1);
                     }
                 }
-            }
-            catch(SQLException SqlEx) {
+            } catch (SQLException SqlEx) {
                 SqlEx.printStackTrace();
                 String err = "There was an error adding the Appointment Record"
                         + "to the database.";
                 SQLException ex = new SQLException(err);
                 throw ex;
             }
-            
+
             app = new Appointment(appId, custId, userId, appTitle, appLoc,
-            appType, appContact, appDesc, sqlStart, sqlEnd);
-            
-        }
-        else {
+                    appType, appContact, appDesc, sqlStart, sqlEnd);
+
+        } else {
             String err = String.format("ApplicationState does not permit adding a new "
                     + "Appointment. \nApp Operation = %s\nEdit Mode = %s1",
-                    ApplicationState.getCurrentOperation(), 
+                    ApplicationState.getCurrentOperation(),
                     ApplicationState.getEditMode());
             IllegalStateException ex = new IllegalStateException(err);
             throw ex;
@@ -535,16 +527,14 @@ public class Appointment {
 
         return app;
     }
-    
-    public void updateAppointmentRecord(ObservableList<Node> children) 
+
+    public void updateAppointmentRecord(ObservableList<Node> children)
             throws IllegalStateException, SQLException {
-        
+
         String appOperation = ApplicationState.getCurrentOperation();
         String currUser = ApplicationState.getCurrentUser();
-        
-        
-        
-        if(appOperation.equals("Update")) {
+
+        if (appOperation.equals("Update")) {
             String updateApp = "UPDATE appointment SET customerId = ?, "
                     + "title = ?, description = ?, location = ?, contact = ?,"
                     + "type = ?, start = ?, end = ?, lastUpdate = NOW(),"
@@ -552,7 +542,7 @@ public class Appointment {
             SQLConnectionHandler sql = new SQLConnectionHandler();
             Connection conn = sql.getSqlConnection();
             PreparedStatement pstmnt = conn.prepareCall(updateApp);
-            
+
             int appId = 0;
             int custId = 0;
             int userId = 0;
@@ -570,10 +560,10 @@ public class Appointment {
             String appEndCalFmt = null;
             LocalDate dpDate = null;
             LocalTime startComboTime = null;
-            for(int i = 0; i < children.size(); i++) {
+            for (int i = 0; i < children.size(); i++) {
                 Node child = children.get(i);
                 String childId = child.getId();
-                
+
                 if (child instanceof TextField) {
 
                     String childText = ((TextField) child).getText();
@@ -594,25 +584,25 @@ public class Appointment {
                             break;
                     }
                 }
-                
+
                 if (child instanceof TextArea) {
-                    
+
                     String childText = ((TextArea) child).getText();
                     this.setDescription(childText);
                 }
-                
+
                 if (child instanceof DatePicker) {
-                    
+
                     LocalDate childDate = ((DatePicker) child).getValue();
                     dpDate = childDate;
                 }
-                
+
                 if (child instanceof ChoiceBox) {
-                    
+
                     String childText = ((ChoiceBox<String>) child).getValue();
-                    
-                    switch(childId) {
-                        
+
+                    switch (childId) {
+
                         case "appTypeChoice":
                             this.setType(childText);
                             break;
@@ -621,33 +611,32 @@ public class Appointment {
                             break;
                     }
                 }
-                
+
                 if (child instanceof ComboBox) {
-                    
-                    switch(childId) {
-                        
+
+                    switch (childId) {
+
                         case "startCombo":
-                            String comboValue = 
-                                    ((ComboBox<String>) child).getValue();
+                            String comboValue
+                                    = ((ComboBox<String>) child).getValue();
                             startComboTime = LocalTime.parse(comboValue);
                             break;
                         case "custCombo":
-                            Customer cust = 
-                                    ((ComboBox<Customer>) child).getValue();
+                            Customer cust
+                                    = ((ComboBox<Customer>) child).getValue();
                             this.setCustId(cust.getId());
                             break;
                     }
                 }
             }
 
-            
             String LocalDateTimeFmt = dpDate.atTime(startComboTime).
                     format(SQL_DATE_FORMATTER);
-            LocalDateTime sqlStart = 
-                    LocalDateTime.parse(LocalDateTimeFmt, SQL_DATE_FORMATTER);
-            
+            LocalDateTime sqlStart
+                    = LocalDateTime.parse(LocalDateTimeFmt, SQL_DATE_FORMATTER);
+
             LocalDateTime sqlEnd = sqlStart.plusMinutes(duration);
-            
+
             this.setStartTime(sqlStart);
             this.setEndTime(sqlEnd);
             this.setStartTimeFormatted();
@@ -659,52 +648,48 @@ public class Appointment {
             pstmnt.setString(3, this.getDescription());
             pstmnt.setString(4, this.getLocation());
             pstmnt.setString(5, this.getContact());
-            pstmnt.setString(6, this.getType()); 
+            pstmnt.setString(6, this.getType());
             pstmnt.setObject(7, sqlStart);
             pstmnt.setObject(8, sqlEnd);
             pstmnt.setString(9, currUser);
             pstmnt.setInt(10, appId);
-            
+
             try {
                 pstmnt.executeUpdate();
-            }
-            catch(SQLException SqlEx) {
+            } catch (SQLException SqlEx) {
                 SqlEx.printStackTrace();
                 String err = "There was an error updating the appointment "
                         + "record.";
                 SQLException ex = new SQLException(err);
                 throw ex;
             }
-        }
-        else {
+        } else {
             String err = String.format("Application state does not permit "
                     + "updating this Appointment record."
                     + "\n Application Operation = %s"
-                    + "Edit Mode = %s", appOperation, 
+                    + "Edit Mode = %s", appOperation,
                     ApplicationState.getEditMode());
-            
+
             IllegalStateException ex = new IllegalStateException(err);
             throw ex;
         }
     }
-    
+
     public void deleteAppointmentRecord() {
         int appId = this.getId();
         String deleteQuery = String.format("DELETE FROM appointment"
                 + " WHERE appointmentId = %d", appId);
-        
+
         SQLConnectionHandler sql = new SQLConnectionHandler();
         Connection conn = sql.getSqlConnection();
         try {
             Statement stmnt = conn.createStatement();
             stmnt.execute(deleteQuery);
-        }
-        catch(SQLException SqlEx) {
+        } catch (SQLException SqlEx) {
             SqlEx.printStackTrace();
-        }
-        finally {
+        } finally {
             sql.closeSqlConnection();
         }
-        
+
     }
 }

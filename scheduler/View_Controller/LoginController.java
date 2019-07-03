@@ -11,6 +11,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -86,6 +90,19 @@ public class LoginController implements Initializable {
                 !password.equals("")) {
             isLoggedIn = login(username, password);
             if(isLoggedIn) {
+                int userId = ApplicationState.getCurrUserId();
+                boolean hasAppointment = appointmentChecker(userId);
+                if(hasAppointment) {
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("You have an appointment!");
+                    alert.setHeaderText("Appointment within 15 minutes!");
+                    alert.setContentText("You have an appointment within"
+                            + " the next 15 minutes! Be sure to check"
+                            + " your Appointments tab for your schedule.");
+                    ButtonType okButton = new ButtonType("OK");
+                    alert.getButtonTypes().setAll(okButton);
+                    alert.show();
+                }
                 try {
                     Parent root = FXMLLoader.load(getClass().getResource(
                     Scheduler.BASE_FOLDER_PATH + "MainScreen.fxml"));
@@ -168,4 +185,44 @@ public class LoginController implements Initializable {
         return isLoggedIn;
     }
     
+    public boolean appointmentChecker(int userId) {
+        boolean hasAppointment = false;
+        String sqlQuery = "SELECT MIN(start) AS 'Start'"
+                + " FROM appointment WHERE userId = ? AND "
+                + "start >= NOW();";
+        SQLConnectionHandler sql = new SQLConnectionHandler();
+        Connection conn = sql.getSqlConnection();
+        TimeZone userTimeZone = ApplicationState.getUserTimeZone();
+        ZoneId userTZId = ZoneId.of(userTimeZone.getID());
+        LocalTime currTime = LocalTime.now(userTZId);
+        LocalTime appTime = null;
+        
+        try {
+            PreparedStatement pstmnt = conn.prepareCall(sqlQuery);
+            pstmnt.setInt(1, userId);
+            ResultSet result = pstmnt.executeQuery();
+            if(result.next()) {
+                Timestamp timestamp = result.getTimestamp("Start");
+                System.out.println(timestamp);
+                appTime = timestamp.toLocalDateTime().atZone(userTZId).
+                        toLocalTime();
+            }
+        }
+        catch (SQLException SqlEx) {
+            SqlEx.printStackTrace();
+        }
+        
+        if(appTime != null) {
+            Duration duration = Duration.between(appTime, currTime);
+            long diff = duration.getSeconds() / 60;
+            System.out.println(appTime);
+            System.out.println(currTime);
+            System.out.println(diff);
+            if(diff <= 15 && diff >= 0) {
+                hasAppointment = true;
+            }
+        }
+        
+        return hasAppointment;
+    }
 }

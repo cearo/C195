@@ -192,10 +192,10 @@ public class MainScreenController implements Initializable {
                 custTable.getSelectionModel().select(firstCust);
                 custTable.scrollTo(0);
                 break;
-            
+
             case "Appointments":
-                TableView<Appointment> appTable = 
-                        (TableView<Appointment>) scene.lookup("#appTable");
+                TableView<Appointment> appTable
+                        = (TableView<Appointment>) scene.lookup("#appTable");
                 Appointment app = appTable.getSelectionModel().
                         getSelectedItem();
                 app.deleteAppointmentRecord();
@@ -299,14 +299,13 @@ public class MainScreenController implements Initializable {
         // Collecting the individual elements on the page
         ObservableList<Node> children = pageContent.getChildren();
 
-        Comparator<Appointment> startDateComp = new Comparator<Appointment>() {
-
-            @Override
-            public int compare(Appointment app1, Appointment app2) {
-                return app1.getStartTime().compareTo(app2.getStartTime());
-            }
-        };
-
+//        Comparator<Appointment> startDateComp = new Comparator<Appointment>() {
+//
+//            @Override
+//            public int compare(Appointment app1, Appointment app2) {
+//                return app1.getStartTime().compareTo(app2.getStartTime());
+//            }
+//        };
         if (event.getSource() instanceof Button) {
             Button buttonPressed = (Button) event.getSource();
             String buttonId = buttonPressed.getId();
@@ -373,29 +372,6 @@ public class MainScreenController implements Initializable {
                             Customer cust
                                     = Customer.addCustomerRecord(children);
 
-//                            FXMLLoader loader = new FXMLLoader();
-//                            loader.setLocation(getClass().getResource(
-//                                    Scheduler.BASE_FOLDER_PATH + 
-//                                            "Customers.fxml"));
-//                            Parent root = loader.load();
-//                            CustomersController custController =
-//                                    loader.getController();
-//                            ObservableList custList = 
-//                                    custController.getCustomersList();
-//
-//
-//                            TableView<Customer> custTable = 
-//                                    custController.getCustomersTableView();
-//                            custTable.getItems().add(cust);
-//                            custTable.getSelectionModel().select(cust);
-//                            custController.refreshCustomersTableView();
-                            //                        Tab selectedTab = 
-                            //                                tabPane.getSelectionModel().getSelectedItem();
-                            //                        
-                            //                        Scene scene = new Scene(root);
-                            //                        Stage stage = (Stage) mainWindow.getScene().getWindow();
-                            //                        stage.setScene(scene);
-                            //                        stage.show();
                             Scene scene = addButton.getScene();
                             TableView<Customer> custTable
                                     = (TableView<Customer>) scene.lookup(
@@ -405,10 +381,7 @@ public class MainScreenController implements Initializable {
                             custTable.getSelectionModel().select(cust);
                         } catch (SQLException SqlEx) {
                             SqlEx.printStackTrace();
-                        } //                        catch(IOException IOEx) {
-                        //                            IOEx.printStackTrace();
-                        //                        }
-                        finally {
+                        } finally {
                             ApplicationState.setCurrentOperation("View");
                             Platform.runLater(new Runnable() {
                                 @Override
@@ -463,12 +436,36 @@ public class MainScreenController implements Initializable {
                             TableView<Appointment> appTable
                                     = (TableView<Appointment>) scene.lookup(
                                             "#appTable");
-                            appTable.getItems().add(newApp);
-                            appTable.refresh();
-                            FXCollections.sort(appTable.getItems(),
-                                    startDateComp);
+
+                            FXMLLoader loader = new FXMLLoader();
+                            loader.setLocation(getClass().getResource(
+                                    Scheduler.BASE_FOLDER_PATH + "Appointments.fxml"));
+                            ObservableList appList = null;
+                            try {
+                                loader.load();
+                                AppointmentsController appCon
+                                        = loader.getController();
+                                appList = appCon.getAppointmentsList();
+                            } catch (IOException IOEx) {
+                                IOEx.printStackTrace();
+                            }
+                            if (appList != null) {
+//                                appList.clear();
+                                appList.add(newApp);
+                            }
+                            for (int i = 0; i < appList.size(); i++) {
+                                System.out.println(appList.get(i));
+                            }
+                            for (int i = 0; i < appTable.getItems().size(); i++) {
+                                System.out.println(appTable.getItems().get(i));
+                            }
+//                            appTable.refresh();
+//                            FXCollections.sort(appTable.getItems(),
+//                                    startDateComp);
                             appTable.getSelectionModel().select(newApp);
                             appTable.scrollTo(newApp);
+                            appTable.sort();
+
                         } catch (SQLException SqlEx) {
                             SqlEx.printStackTrace();
                         } finally {
@@ -510,10 +507,10 @@ public class MainScreenController implements Initializable {
                             });
                         }
 
-                        FXCollections.sort(appTable.getItems(),
-                                startDateComp);
+//                        FXCollections.sort(appTable.getItems(),
+//                                startDateComp);
 //                            appTable.refresh();
-//                            appTable.sort();
+                        appTable.sort();
 //                            appTable.getSelectionModel().select(appUpdate);
                     }
                     break;
