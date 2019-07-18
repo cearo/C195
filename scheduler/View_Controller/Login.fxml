@@ -23,7 +23,7 @@
          <font>
             <Font name="Lucida Sans Regular" size="12.0" />
          </font></Button>
-      <Button id="cancelButton" fx:id="cancelButton" layoutX="320.0" layoutY="225.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="65.0" text="Cancel">
+      <Button id="cancelButton" fx:id="cancelButton" layoutX="320.0" layoutY="225.0" mnemonicParsing="false" onAction="#cancelButtonHandler" prefHeight="34.0" prefWidth="65.0" text="Cancel">
          <font>
             <Font name="Lucida Sans Regular" size="12.0" />
          </font></Button>

@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
+import scheduler.util.AuditLogger;
 
 /**
  *
@@ -37,6 +38,7 @@ public class Scheduler extends Application {
     }
 
     public static void main(String[] args) {
+        AuditLogger.initialize();
         launch(args);
     }
     

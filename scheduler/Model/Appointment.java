@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.TimeZone;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -32,6 +33,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import scheduler.util.ApplicationState;
+import scheduler.util.DataHandler;
 import scheduler.util.SQLConnectionHandler;
 
 /**
@@ -45,9 +47,11 @@ public class Appointment {
     private static final String SQL_TZ_ID = SQL_TZ.getID();
     private static final String DT_CALENDAR_FORMAT
             = "EEE, MMM dd, yyyy " + "hh:mm:ss";
-    public static final String DT_EU_FORMAT = "dd/MM/yyyy";
-    public static final String DT_USA_FORMAT = "MM/dd/yyyy";
+    public static final String DT_EU_FORMAT = "dd/MM/yyyy HH:mm:ss";
+    public static final String DT_USA_FORMAT = "MM/dd/yyyy HH:mm:ss";
     private static final String SQL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final LocalTime BUSINESS_START = LocalTime.parse("08:00");
+    private static final LocalTime BUSINESS_END = LocalTime.parse("17:00");
     private static final DateTimeFormatter SQL_DATE_FORMATTER
             = DateTimeFormatter.ofPattern(SQL_DATE_FORMAT).withZone(
                     ZoneId.of(SQL_TZ_ID));
@@ -236,8 +240,9 @@ public class Appointment {
     }
 
     public void setStartTimeFormatted() {
-        LocalDateTime starTime = this.getStartTime();
-        Timestamp timestamp = Timestamp.valueOf(starTime);
+        LocalDateTime appStartTime = this.getStartTime();
+        //Timestamp timestamp = Timestamp.valueOf(starTime);
+        Timestamp timestamp = Timestamp.valueOf(appStartTime);
         String startFmt = DT_LOCALE_FORMATTER.format(timestamp);
         this.startTimeFmt.set(startFmt);
     }
@@ -361,14 +366,9 @@ public class Appointment {
 
     public Address getCustomerAddress() {
         Address addr = null;
-        System.out.println(this.customer);
-        System.out.println(this.customerAddress);
         if (this.customerAddress == null && this.customer != null) {
-            System.out.println("In getCustAddr if");
             addr = this.customer.getCustomerAddress();
-            System.out.println(addr);
         } else {
-            System.out.println("In getCustAddr Else");
             addr = this.customerAddress;
         }
         return addr;
@@ -376,7 +376,8 @@ public class Appointment {
 
     public static Appointment addAppointmentRecord(
             ObservableList<Node> children) throws IllegalStateException,
-            SQLException {
+            SQLException, BusinessHoursException, 
+            AppointmentOverlapException {
         Appointment app = null;
         String appOperation = ApplicationState.getCurrentOperation();
         String currUser = ApplicationState.getCurrentUser();
@@ -431,19 +432,19 @@ public class Appointment {
                     }
                 }
 
-                if (child instanceof TextArea) {
+                else if (child instanceof TextArea) {
 
                     String childText = ((TextArea) child).getText();
                     appDesc = childText;
                 }
 
-                if (child instanceof DatePicker) {
+                else if (child instanceof DatePicker) {
 
                     LocalDate childDate = ((DatePicker) child).getValue();
                     dpDate = childDate;
                 }
 
-                if (child instanceof ChoiceBox) {
+                else if (child instanceof ChoiceBox) {
 
                     String childText = ((ChoiceBox<String>) child).getValue();
 
@@ -458,7 +459,7 @@ public class Appointment {
                     }
                 }
 
-                if (child instanceof ComboBox) {
+                else if (child instanceof ComboBox) {
 
                     switch (childId) {
 
@@ -477,7 +478,34 @@ public class Appointment {
             }
 
             userId = ApplicationState.getCurrUserId();
-
+            
+            boolean isBeforeStart = startComboTime.isBefore(BUSINESS_START);
+            boolean isAfterEnd = startComboTime.
+                    plusMinutes(duration).isAfter(BUSINESS_END);
+            
+            if (isBeforeStart || isAfterEnd) {
+               throw new BusinessHoursException("Appointment is outside"
+                       + "business hours."); 
+            }
+            
+            ObservableList appList = DataHandler.getAppointments();
+            
+            for(int i = 0; i < appList.size(); i++) {
+                Appointment apmnt = (Appointment) appList.get(i);
+                LocalDate appDate = apmnt.getStartTime().toLocalDate();
+                LocalTime appStartTime = apmnt.getStartTime().toLocalTime();
+                LocalTime appEndTime = apmnt.getEndTime().toLocalTime();
+                
+                if( dpDate.equals(appDate) && 
+                        (startComboTime.equals(appStartTime) || 
+                        startComboTime.plusMinutes(duration).equals(appEndTime))
+                   ) {
+                    String errMsg = "This appointment overlaps with another."
+                            + " Please reschedule to resolve the conflict.";
+                    throw new AppointmentOverlapException(errMsg);
+                }
+            }
+            
             pstmnt.setInt(1, custId);
             pstmnt.setInt(2, userId);
             pstmnt.setString(3, appTitle);
@@ -529,7 +557,8 @@ public class Appointment {
     }
 
     public void updateAppointmentRecord(ObservableList<Node> children)
-            throws IllegalStateException, SQLException {
+            throws IllegalStateException, SQLException , 
+            BusinessHoursException, AppointmentOverlapException {
 
         String appOperation = ApplicationState.getCurrentOperation();
         String currUser = ApplicationState.getCurrentUser();
@@ -627,6 +656,33 @@ public class Appointment {
                             this.setCustId(cust.getId());
                             break;
                     }
+                }
+            }
+            
+            boolean isBeforeStart = startComboTime.isBefore(BUSINESS_START);
+            boolean isAfterEnd = startComboTime.
+                    plusMinutes(duration).isAfter(BUSINESS_END);
+            
+            if (isBeforeStart || isAfterEnd) {
+               throw new BusinessHoursException("Appointment is outside"
+                       + "business hours."); 
+            }
+            
+            ObservableList appList = DataHandler.getAppointments();
+            
+            for(int i = 0; i < appList.size(); i++) {
+                Appointment apmnt = (Appointment) appList.get(i);
+                LocalDate appDate = apmnt.getStartTime().toLocalDate();
+                LocalTime appStartTime = apmnt.getStartTime().toLocalTime();
+                LocalTime appEndTime = apmnt.getEndTime().toLocalTime();
+                
+                if( dpDate.equals(appDate) && 
+                        (startComboTime.equals(appStartTime) || 
+                        startComboTime.plusMinutes(duration).equals(appEndTime))
+                   ) {
+                    String errMsg = "This appointment overlaps with another."
+                            + " Please reschedule to resolve the conflict.";
+                    throw new AppointmentOverlapException(errMsg);
                 }
             }
 

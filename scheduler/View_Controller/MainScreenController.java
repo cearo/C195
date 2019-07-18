@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
@@ -49,9 +50,12 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import scheduler.Model.Appointment;
+import scheduler.Model.AppointmentOverlapException;
+import scheduler.Model.BusinessHoursException;
 import scheduler.Scheduler;
 import scheduler.Model.Customer;
 import scheduler.util.ApplicationState;
+import scheduler.util.DataHandler;
 import scheduler.util.SQLConnectionHandler;
 
 /**
@@ -123,9 +127,6 @@ public class MainScreenController implements Initializable {
         } catch (SQLException SqlEx) {
             SqlEx.printStackTrace();
         }
-
-        System.out.println(ApplicationState.getCurrUserId());
-        System.out.println(ApplicationState.getCurrentUser());
     }
 
     @FXML
@@ -199,8 +200,8 @@ public class MainScreenController implements Initializable {
                 Appointment app = appTable.getSelectionModel().
                         getSelectedItem();
                 app.deleteAppointmentRecord();
-                appTable.getItems().remove(app);
-                appTable.refresh();
+                ObservableList appList = DataHandler.getAppointments();
+                appList.remove(app);
                 appTable.getSelectionModel().selectFirst();
                 appTable.scrollTo(0);
         }
@@ -283,8 +284,6 @@ public class MainScreenController implements Initializable {
 
             } // I don't want to disable Labels
             else if (!(child instanceof Label) && !(child instanceof Separator)) {
-                System.out.println(child.getId());
-                System.out.println(child.isDisabled());
                 // Disabling Table Views
                 child.setDisable(true);
             }
@@ -298,14 +297,8 @@ public class MainScreenController implements Initializable {
         AnchorPane pageContent = (AnchorPane) ((Tab) selectedItem).getContent();
         // Collecting the individual elements on the page
         ObservableList<Node> children = pageContent.getChildren();
-
-//        Comparator<Appointment> startDateComp = new Comparator<Appointment>() {
-//
-//            @Override
-//            public int compare(Appointment app1, Appointment app2) {
-//                return app1.getStartTime().compareTo(app2.getStartTime());
-//            }
-//        };
+        
+        
         if (event.getSource() instanceof Button) {
             Button buttonPressed = (Button) event.getSource();
             String buttonId = buttonPressed.getId();
@@ -358,6 +351,19 @@ public class MainScreenController implements Initializable {
                     });
                     break;
                 case "saveButton":
+                    StringBuilder errors = inputValidator(children);
+                    
+                    if(errors.length() > 0) {
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Blank fields detected");
+                        alert.setHeaderText("Please fill in the fields listed");
+                        alert.setContentText(errors.toString());
+                        alert.showAndWait();
+                        
+                        String exMsg = "All required fields must be filled in.";
+                        throw new IllegalArgumentException(exMsg);
+                        
+                    }
                     String appOperation
                             = ApplicationState.getCurrentOperation();
                     ApplicationState.setEditMode(false);
@@ -381,7 +387,8 @@ public class MainScreenController implements Initializable {
                             custTable.getSelectionModel().select(cust);
                         } catch (SQLException SqlEx) {
                             SqlEx.printStackTrace();
-                        } finally {
+                        }
+                        finally {
                             ApplicationState.setCurrentOperation("View");
                             Platform.runLater(new Runnable() {
                                 @Override
@@ -436,49 +443,43 @@ public class MainScreenController implements Initializable {
                             TableView<Appointment> appTable
                                     = (TableView<Appointment>) scene.lookup(
                                             "#appTable");
-
-                            FXMLLoader loader = new FXMLLoader();
-                            loader.setLocation(getClass().getResource(
-                                    Scheduler.BASE_FOLDER_PATH + "Appointments.fxml"));
-                            ObservableList appList = null;
-                            try {
-                                loader.load();
-                                AppointmentsController appCon
-                                        = loader.getController();
-                                appList = appCon.getAppointmentsList();
-                            } catch (IOException IOEx) {
-                                IOEx.printStackTrace();
-                            }
-                            if (appList != null) {
-//                                appList.clear();
-                                appList.add(newApp);
-                            }
-                            for (int i = 0; i < appList.size(); i++) {
-                                System.out.println(appList.get(i));
-                            }
-                            for (int i = 0; i < appTable.getItems().size(); i++) {
-                                System.out.println(appTable.getItems().get(i));
-                            }
-//                            appTable.refresh();
-//                            FXCollections.sort(appTable.getItems(),
-//                                    startDateComp);
+                            ObservableList appList = DataHandler.getAppointments();
+                            appList.add(newApp);
                             appTable.getSelectionModel().select(newApp);
                             appTable.scrollTo(newApp);
-                            appTable.sort();
 
                         } catch (SQLException SqlEx) {
                             SqlEx.printStackTrace();
-                        } finally {
+                        } 
+                        catch (BusinessHoursException BHEx) {
+                            clearFormData(children);
+                            Alert alert = new Alert(Alert.AlertType.WARNING);
+                            alert.setTitle("Business Rule Violation");
+                            alert.setHeaderText("Appointment is outside "
+                                    + "business hours");
+                            alert.setContentText("Appointments can only be "
+                                    + "scheduled between 8:00 am and 5:00 pm");
+                            alert.showAndWait();
+                            break;
+                        }
+                        catch (AppointmentOverlapException AOEx) {
+                            clearFormData(children);
+                            Alert alert = new Alert(Alert.AlertType.WARNING);
+                            alert.setTitle("Business Rule Violation");
+                            alert.setHeaderText("Appointment overlaps with"
+                                    + " another.");
+                            alert.setContentText(AOEx.getMessage());
+                            alert.showAndWait();
+                            break;
+                        }
+                        finally {
                             ApplicationState.setCurrentOperation("View");
-                            Platform.runLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    addButton.setText("Add");
-                                    addButton.setId("addButton");
-                                    editButton.setText("Edit");
-                                    editButton.setId("editButton");
-                                    deleteButton.setDisable(false);
-                                }
+                            Platform.runLater(() -> {
+                                addButton.setText("Add");
+                                addButton.setId("addButton");
+                                editButton.setText("Edit");
+                                editButton.setId("editButton");
+                                deleteButton.setDisable(false);
                             });
                         }
                     } else if (appOperation.equals("Update")
@@ -493,7 +494,29 @@ public class MainScreenController implements Initializable {
                             appUpdate.updateAppointmentRecord(children);
                         } catch (SQLException SqlEx) {
                             SqlEx.printStackTrace();
-                        } finally {
+                        } 
+                        catch(BusinessHoursException BHEx) {
+                            clearFormData(children);
+                            Alert alert = new Alert(Alert.AlertType.WARNING);
+                            alert.setTitle("Business Rule Violation");
+                            alert.setHeaderText("Appointment is outside "
+                                    + "business hours");
+                            alert.setContentText("Appointments can only be "
+                                    + "scheduled between 8:00 am and 5:00 pm");
+                            alert.showAndWait();
+                            break;
+                        }
+                        catch (AppointmentOverlapException AOEx) {
+                            clearFormData(children);
+                            Alert alert = new Alert(Alert.AlertType.WARNING);
+                            alert.setTitle("Business Rule Violation");
+                            alert.setHeaderText("Appointment overlaps with"
+                                    + " another.");
+                            alert.setContentText(AOEx.getMessage());
+                            alert.showAndWait();
+                            break;
+                        }
+                        finally {
                             ApplicationState.setCurrentOperation("View");
                             Platform.runLater(new Runnable() {
                                 @Override
@@ -572,5 +595,43 @@ public class MainScreenController implements Initializable {
                 ((ComboBox) child).setValue(null);
             }
         });
+    }
+    
+    public StringBuilder inputValidator(ObservableList<Node> children) {
+        StringBuilder errorText = new StringBuilder();
+        
+        children.forEach(child -> {
+            
+            String childId = child.getId();
+            String errorMsg = String.format("** %s cannot be blank.\n", 
+                    childId);
+            
+            if (child instanceof TextField) {
+                if(!childId.equals("idField")) {
+                    boolean isEmpty = ((TextField) child).
+                        getText().trim().isEmpty();
+                    if (isEmpty) errorText.append(errorMsg);
+                }
+            }
+            else if (child instanceof TextArea) {
+                
+                String text = ((TextArea) child).getText();
+                boolean isEmpty = text == null ? true : text.trim().isEmpty();
+                if (isEmpty) errorText.append(errorMsg);
+            }
+            else if (child instanceof DatePicker) {
+                LocalDate childDate = ((DatePicker) child).getValue();
+                if(childDate == null) errorText.append(errorMsg);
+            }
+            else if (child instanceof ChoiceBox) {
+                Object childValue = ((ChoiceBox) child).getValue();
+                if(childValue == null) errorText.append(errorMsg);
+            }
+            else if (child instanceof ComboBox) {
+                Object childValue = ((ComboBox) child).getValue();
+                if(childValue == null) errorText.append(errorMsg);
+            }
+        });
+        return errorText;
     }
 }

@@ -141,8 +141,6 @@ public class CustomersController implements Initializable {
         Customer cust = custTable.getSelectionModel().getSelectedItem();
         fillCustomerForm(cust);
         
-        System.out.println(custTable.getSelectionModel());
-        
         custTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
                     if(newSelection != null) {

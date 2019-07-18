@@ -61,6 +61,7 @@ import scheduler.Model.Appointment;
 import scheduler.Model.Customer;
 import scheduler.Scheduler;
 import scheduler.util.ApplicationState;
+import scheduler.util.DataHandler;
 import scheduler.util.SQLConnectionHandler;
 
 /**
@@ -111,8 +112,6 @@ public class AppointmentsController implements Initializable {
     @FXML
     private ToggleGroup calendarViewGroup;
 
-    private static final ObservableList APPOINTMENTS
-            = FXCollections.observableArrayList();
 
     private static DateTimeFormatter datePickerFormatter = null;
 
@@ -125,6 +124,7 @@ public class AppointmentsController implements Initializable {
             = FXCollections.observableArrayList();
     private static final ObservableList CUSTOMERS
             = FXCollections.observableArrayList();
+    
 
     /**
      * Initializes the controller class.
@@ -136,6 +136,7 @@ public class AppointmentsController implements Initializable {
         Appointment.DT_CALENDAR_FORMATTER.setTimeZone(tz);
         Locale loc = ApplicationState.getLocale();
         String locName = loc.getCountry();
+        ObservableList apps = DataHandler.getAppointments();
 
         if (locName.equals("US")) {
             Appointment.DT_LOCALE_FORMATTER.applyPattern(Appointment.DT_USA_FORMAT);
@@ -148,7 +149,7 @@ public class AppointmentsController implements Initializable {
         Appointment.DT_LOCALE_FORMATTER.setTimeZone(tz);
 
         FilteredList<Appointment> filteredApps = new FilteredList<>(
-                APPOINTMENTS);
+                apps);
 
         calendarViewGroup.selectedToggleProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
@@ -194,27 +195,7 @@ public class AppointmentsController implements Initializable {
         sortedApps.setComparator(startDateComp);
         sortedApps.comparatorProperty().bind(appTable.comparatorProperty());
 
-        String allAppointmentInfo = "SELECT app.appointmentId, \n"
-                + "app.customerId, \n"
-                + "cust.customerName, \n"
-                + "addr.phone, \n"
-                + "app.userId, \n"
-                + "app.title, \n"
-                + "app.description, \n"
-                + "app.location, \n"
-                + "app.contact, \n"
-                + "app.type, \n"
-                + "app.start, \n"
-                + "app.end\n"
-                + "FROM appointment AS app\n"
-                + "INNER JOIN customer AS cust\n"
-                + "ON(app.customerId = cust.customerId)\n"
-                + "INNER JOIN address AS addr\n"
-                + "ON(cust.addressId = addr.addressId)\n"
-                + "WHERE start >= NOW()\n"
-                + "ORDER BY app.start;";
-        SQLConnectionHandler sql = new SQLConnectionHandler();
-        Connection conn = sql.getSqlConnection();
+        
 
         appStartCol.setCellValueFactory(
                 new PropertyValueFactory<>("startCalFmt"));
@@ -225,7 +206,7 @@ public class AppointmentsController implements Initializable {
         appLocCol.setCellValueFactory(
                 new PropertyValueFactory<>("location"));
 
-        appTable.setItems(sortedApps);
+        appTable.setItems(filteredApps);
 
         appTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
@@ -256,43 +237,7 @@ public class AppointmentsController implements Initializable {
                                         getPhoneNumber());
                     }
                 });
-        try {
-            PreparedStatement allAppInfoStmnt
-                    = conn.prepareStatement(allAppointmentInfo);
-            ResultSet allAppInfoRslt = allAppInfoStmnt.executeQuery();
-
-            while (allAppInfoRslt.next()) {
-                int appId = allAppInfoRslt.getInt("appointmentId");
-                int custId = allAppInfoRslt.getInt("customerId");
-                String custName = allAppInfoRslt.getString("customerName");
-                String custPhone = allAppInfoRslt.getString("phone");
-                int userId = allAppInfoRslt.getInt("userId");
-                String appTitle = allAppInfoRslt.getString("title");
-                String appDescr = allAppInfoRslt.getString("description");
-                String appLoc = allAppInfoRslt.getString("location");
-                String appContact = allAppInfoRslt.getString("contact");
-                String appType = allAppInfoRslt.getString("type");
-                Timestamp startSqlDate = allAppInfoRslt.getTimestamp("start");
-                LocalDateTime appStartDate = startSqlDate.toLocalDateTime();
-                Timestamp endSqlDate = allAppInfoRslt.getTimestamp("end");
-                LocalDateTime appEndDate = endSqlDate.toLocalDateTime();
-                String startCalendarFmt = Appointment.DT_CALENDAR_FORMATTER.format(
-                        startSqlDate);
-                String startLocaleFmt = Appointment.DT_LOCALE_FORMATTER.format(startSqlDate);
-                String endCalendarFmt = Appointment.DT_CALENDAR_FORMATTER.format(endSqlDate);
-                String endLocaleFmt = Appointment.DT_LOCALE_FORMATTER.format(endSqlDate);
-
-                Appointment newApp = new Appointment(appId, custId, userId,
-                        appTitle, appLoc, appType,
-                        appContact, appDescr, appStartDate,
-                        appEndDate, startLocaleFmt,
-                        endLocaleFmt, startCalendarFmt,
-                        endCalendarFmt);
-                APPOINTMENTS.add(newApp);
-            }
-        } catch (SQLException SqlEx) {
-            SqlEx.printStackTrace();
-        }
+        
 
         //calendarViewGroup.selectToggle(weekRadio);
         appTable.getSelectionModel().selectFirst();
@@ -353,8 +298,7 @@ public class AppointmentsController implements Initializable {
         startCombo.setValue(appStartTimeFmt);
 
         appCustPhoneField.setText(appCustAddr.getPhoneNumber());
-        appDatePicker.setValue(LocalDate.parse(
-                app.getStartTimeFormatted(), datePickerFormatter));
+        appDatePicker.setValue(app.getStartTime().toLocalDate());
         appLocationChoice.setValue(app.getLocation());
         appTypeChoice.setValue(app.getType());
 
@@ -366,9 +310,5 @@ public class AppointmentsController implements Initializable {
         appDurationField.setText(Long.toString(durationMinutes));
         appContactField.setText(app.getContact());
         appDescriptionArea.setText(app.getDescription());
-    }
-
-    public static ObservableList<Appointment> getAppointmentsList() {
-        return APPOINTMENTS;
     }
 }
