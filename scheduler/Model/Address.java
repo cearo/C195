@@ -1,13 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package scheduler.Model;
 
 /**
  *
  * @author Cory
+ * This class represents a Customer's address. This class is modeled after the
+ * address database table.
  */
 public class Address {
     

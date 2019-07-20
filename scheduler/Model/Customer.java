@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package scheduler.Model;
 
 import scheduler.util.SQLConnectionHandler;
@@ -12,9 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -24,87 +16,98 @@ import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
-import org.omg.CORBA.portable.ApplicationException;
 import scheduler.util.ApplicationState;
 
 /**
  *
  * @author Cory
+ * This class represents a Customer in the application and is modeled after 
+ * the customer table in the database.
  */
 public class Customer {
     
-    private IntegerProperty id;
-    private StringProperty customerName;
-    private IntegerProperty isActive;
-    private IntegerProperty addressId;
+    // Used Java Beans Properties instead of standard primitives to make it 
+    // easier to display data on the app.
+    private final IntegerProperty ID;
+    private final StringProperty CUSTOMER_NAME;
+    private final IntegerProperty IS_ACTIVE;
+    private final IntegerProperty ADDRESS_ID;
     private Address address;
     
     public Customer(int id, String customerName, int isActive, int addressId) {
-        this.id = new SimpleIntegerProperty(id);
-        this.customerName = new SimpleStringProperty(customerName);
-        this.isActive = new SimpleIntegerProperty(isActive);
-        this.addressId = new SimpleIntegerProperty(addressId);
+        this.ID = new SimpleIntegerProperty(id);
+        this.CUSTOMER_NAME = new SimpleStringProperty(customerName);
+        this.IS_ACTIVE = new SimpleIntegerProperty(isActive);
+        this.ADDRESS_ID = new SimpleIntegerProperty(addressId);
         this.address = null;
     }
     
     public int getId() {
-        return this.id.get();
+        return this.ID.get();
     }
     
     private void setId(int id) {
-        this.id.set(id);
+        this.ID.set(id);
     }
     
     public IntegerProperty idProperty() {
-        return id;
+        return ID;
     }
     
     public String getName() {
-        return this.customerName.get();
+        return this.CUSTOMER_NAME.get();
     }
     
     public void setName(String name) {
-        this.customerName.set(name);
+        this.CUSTOMER_NAME.set(name);
     }
     
     public StringProperty customerNameProperty() {
-        return customerName;
+        return CUSTOMER_NAME;
     }
     
     public int getActiveState() {
-        return this.isActive.get();
+        return this.IS_ACTIVE.get();
     }
     
     public void setActiveState(int isActive) {
-        this.isActive.set(isActive);
+        this.IS_ACTIVE.set(isActive);
     }
     
     public IntegerProperty isActiveProperty() {
-        return isActive;
+        return IS_ACTIVE;
     }
     
     public int getAddressId() {
-        return this.addressId.get();
+        return this.ADDRESS_ID.get();
     }
     
     private void setAddressId(int id) {
-        this.addressId.set(id);
+        this.ADDRESS_ID.set(id);
     }
     
     public IntegerProperty addressIdProperty() {
-        return addressId;
+        return ADDRESS_ID;
     }
     
+    // This method takes in an ObservableList of nodes from the form fields 
+    // which contain data to create the new Customer record in the database,
+    // create a new customer object.
     public static Customer addCustomerRecord(ObservableList<Node> children) 
                                             throws IllegalStateException,
                                                    SQLException {
+        // The Customer object to be returned
         Customer cust = null;
+        // Getting the app state to validate
         String appOperation = ApplicationState.getCurrentOperation();
         String currUser = ApplicationState.getCurrentUser();
         Address customerAddress = null;
         
+        // Validating that the application is in add state
         if(appOperation.equals("Add")) {
             SQLConnectionHandler sql = new SQLConnectionHandler();
+            
+            // Customer fields
             int custId = 0;
             String name = null;
             int active = 0;
@@ -118,11 +121,15 @@ public class Customer {
             Timestamp timestamp = null;
             int addrId = 0;
 
-            
+            // Begin grabbing form data
             for(int i = 0; i < children.size(); i++) {
                 Node child = children.get(i);
                 String childId = child.getId();
                 
+                // Since I can't know what type of object I'm working with
+                // and each object has different methods for getting the form
+                // data, I'm validating the object type, casting it to the child
+                // and calling the appropriate method.
                 if(child instanceof TextField) {
                     
                     String childText = ((TextField) child).getText();
@@ -183,19 +190,24 @@ public class Customer {
                     }
                 }
             }
+            // The SQL Insert string to add a new address record
             String addressInsert =
                     "INSERT into address(address, address2, cityId,"
-                    + "postalCode, phone, createDate, createdBy)"
-                    + "VALUES(?, ?, ?, ?, ?, ?, ?);";
+                    + "postalCode, phone, createDate, createdBy, lastUpdateBy)"
+                    + "VALUES(?, ?, ?, ?, ?, ?, ?, ?);";
+            // The SQL string to get a city ID for creating a new address
             String getCityId = String.format("SELECT cityId "
                                              + "FROM city "
                                              + "WHERE city = '%s';", city);
+            // Getting the time of the SQL server
             String sqlTime = "SELECT NOW();";
             
             Connection conn = sql.getSqlConnection();
             
+            // Executing statement to get the city ID
             ResultSet cityIdResult = sql.executeQuery(getCityId);
             
+            // Executing the statement to get the SQL time
             ResultSet sqlTimeResult = sql.executeQuery(sqlTime);
             
             try {
@@ -227,9 +239,12 @@ public class Customer {
             }
             
             try { 
+                // Prepared statement to insert the new address which returns
+                // the auto generated primary key
                 PreparedStatement pstmnt = 
                         conn.prepareStatement(addressInsert, 
                                               Statement.RETURN_GENERATED_KEYS);
+                // Configuring the prepared statement
                 pstmnt.setString(1, addr1);
                 pstmnt.setString(2, addr2);
                 pstmnt.setInt(3, cityId);
@@ -237,10 +252,13 @@ public class Customer {
                 pstmnt.setString(5, phone);
                 pstmnt.setTimestamp(6, timestamp);
                 pstmnt.setString(7, currUser);
+                pstmnt.setString(8, currUser);
                 
+                // Executing prepared statement
                 int rowsAffected = pstmnt.executeUpdate();
                 
                 if(rowsAffected == 1) {
+                    // Getting the generated primary key
                     ResultSet addrIdResult = pstmnt.getGeneratedKeys();
                     if(addrIdResult.next()) {
                         addrId = addrIdResult.getInt(1);
@@ -258,23 +276,30 @@ public class Customer {
             catch(SQLException SqlEx) {
                 SqlEx.printStackTrace();
             }
+            
+            // SQL statement string to insert a new customer record
             String addCustomerQuery = 
                     "INSERT INTO customer (customerName, addressId, active,"
-                    + "createDate, createdBy)"
-                    + "VALUES(?, ?, ?, ?, ?)";
+                    + "createDate, createdBy, lastUpdateBy)"
+                    + "VALUES(?, ?, ?, ?, ?, ?)";
             
             try {
+                // Prepared Statement to add new customer record and return
+                // the auto generated primary key
                 PreparedStatement pstmnt = 
                         conn.prepareStatement(addCustomerQuery, 
                                 Statement.RETURN_GENERATED_KEYS);
+                // Configuring the prepared statement
                 pstmnt.setString(1, name);
                 pstmnt.setInt(2, addrId);
                 pstmnt.setInt(3, active);
                 pstmnt.setTimestamp(4, timestamp);
                 pstmnt.setString(5, currUser);
+                pstmnt.setString(6, currUser);
                 
                 int rowsAffected = pstmnt.executeUpdate();
                 
+                // Getting the generated keys
                 if(rowsAffected == 1) {
                     ResultSet custIdResult = pstmnt.getGeneratedKeys();
                     if(custIdResult.next()) {
@@ -288,6 +313,7 @@ public class Customer {
             finally {
                 sql.closeSqlConnection();
             }
+            // Creating new Customer object
             cust = new Customer(custId, name, active, addrId);
             cust.getCustomerAddress();
         }
@@ -303,18 +329,26 @@ public class Customer {
         return cust;
     }
     
+    // This method updates the object from which it is called and updates the
+    // corresponding SQL record.
     public void updateCustomerRecord(ObservableList<Node> children) 
             throws IllegalStateException, SQLException {
-        
+        // Getting application operation to validate
         String appOperation = ApplicationState.getCurrentOperation();
+        // Getting the current logged in user
         String currUser = ApplicationState.getCurrentUser();
         Address custAddress = this.getCustomerAddress();
         
+        // Validating that the app is in Update mode
         if(appOperation.equals("Update")) {
             for(int i = 0; i < children.size(); i++) {
                 Node child = children.get(i);
                 String childId = child.getId();
                 
+                // Since I can't know what type of object I'm working with
+                // and each object has different methods for getting the form
+                // data, I'm validating the object type, casting it to the child
+                // and calling the appropriate method.
                 if(child instanceof TextField) {
                     
                     String childText = ((TextField) child).getText();
@@ -356,7 +390,8 @@ public class Customer {
                     }
                 }
                 else if(child instanceof ChoiceBox) {
-                    
+                    // Since none of my objects store city and country info
+                    // I have to go to the database to get the info.
                     String selectedValue = 
                             (String) ((ChoiceBox) child).getValue();
                     String queryTemplate = 
@@ -367,18 +402,23 @@ public class Customer {
                             + " WHERE ci.city = '%s';";
                     String currCityName = this.address.getCityName();
                     String currCountryName = this.address.getCountryName();
+                    // This will be used to determine whether I need to submit
+                    // my SQL query.
                     boolean valuesChanged = false;
                     
                     switch(childId) {
                         
                         case "CustCity":
+                            // Determining if the value in the form field
+                            // is different from what the object has stored
                              if(!currCityName.equals(selectedValue)) {
                                  this.address.setCityName(selectedValue);
                                  currCityName = this.address.getCityName();
                                  valuesChanged = true;
                              }
                             break;
-                        
+                        // Determining if the value in the form field
+                        // is different from what the object has stored
                         case "CustCountry":
                             if(!currCountryName.equals(selectedValue)) {
                                 this.address.setCountryName(selectedValue);
@@ -388,7 +428,10 @@ public class Customer {
                             break;
                     }
                     
+                    // If the form and object values don't match, I need to go
+                    // to SQL to get the city and country IDs
                     if(valuesChanged) {
+                        // Formatting the query string with the city name
                         String cityAndCountryInfo = 
                                 String.format(queryTemplate, currCityName);
                         SQLConnectionHandler sql = new SQLConnectionHandler();
@@ -414,12 +457,15 @@ public class Customer {
                     }
                 }
             }
+            // The SQL update query string for the customer's address
             String updateAddress = "UPDATE address SET address=?, address2=?,"
                     + "cityId=?, postalCode=?, phone=?, lastUpdate=?,"
                     + "lastUpdateBy=? WHERE addressId = ?";
+            // The SQL update query string for the Customer record
             String updateCustomer = "UPDATE customer SET customerName=?,"
                     + "addressId=?, active=?, lastUpdate=?, lastUpdateBy=? "
                     + "WHERE customerId = ?";
+            // The current time of the SQL server
             String sqlTime = "SELECT NOW();";
             Timestamp timestamp = null;
             SQLConnectionHandler sql = new SQLConnectionHandler();
@@ -442,8 +488,9 @@ public class Customer {
             }
             
             Connection conn = sql.getSqlConnection();
+            // Prepared statement used to execute update address record
             PreparedStatement addrPstmnt = conn.prepareStatement(updateAddress);
-            
+            // Configuring the prepared statement
             addrPstmnt.setString(1, this.address.getAddressField1());
             addrPstmnt.setString(2, this.address.getAddressField2());
             addrPstmnt.setInt(3, this.address.getCityId());
@@ -453,9 +500,10 @@ public class Customer {
             addrPstmnt.setString(7, currUser);
             addrPstmnt.setInt(8, this.address.getId());
             
+            // Prepared statement used to execute update customer record
             PreparedStatement custPstmnt = 
                     conn.prepareStatement(updateCustomer);
-            
+            // Configuring the prepared statement
             custPstmnt.setString(1, this.getName());
             custPstmnt.setInt(2, this.address.getId());
             custPstmnt.setInt(3, this.getActiveState());
@@ -493,6 +541,7 @@ public class Customer {
         }
     }
     
+    // Deleting this customer record from SQL
     public void deleteCustomerRecord() {
          int custId = this.getId();
          String deleteQuery = String.format("DELETE FROM customer " 
@@ -513,6 +562,8 @@ public class Customer {
          }
     }
     
+    // This getter will check to see if the current address for this customer
+    // is null and if so, reach out to SQL to get the customer's address info.
     public Address getCustomerAddress() {
         
         Address result = null;
@@ -520,7 +571,8 @@ public class Customer {
         if(this.address == null) {
             int customerId = this.getId();
             int addressId = this.getAddressId();
-
+            
+            // The SQL query string to get the customer info
             String getAddressInfo = String.format("SELECT addr.address,"
                     + "addr.address2, addr.cityId, addr.postalCode, addr.phone,"
                     + "ci.city, co.countryId, co.country "

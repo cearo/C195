@@ -1,27 +1,27 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package scheduler.util;
 
-import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
 /**
  *
  * @author Cory
+ * This class holds state information for the current application runtime.
  */
 public class ApplicationState {
-    
+    // The available application actions
     private static final String[] OPERATIONS = {"View", "Update", "Add"};
+    // Whether the application is in an edit state
     private static boolean editMode;
+    // What is the user currently trying to do?
     private static String currentOperation;
+    // Who is currently logged in?
     private static String currentUser;
     private static int currUserId;
+    // What's the time zone and locale of the logged in user?
     private static TimeZone userTimeZone = null;
     private static Locale userLocale = null;
+    // What's the DB time zone?
     private static TimeZone dbTimeZone = null;
     
     
@@ -36,12 +36,18 @@ public class ApplicationState {
     public static String getCurrentOperation() {
         return currentOperation;
     }
-    
+    // The application only has three available operations: Add, Update, View
+    // If a state other than those three were to be entered, 
+    // an IllegalArgumentException will be thrown. If the Operation is updated
+    // to Add or Update but the application isn't in edit mode, an 
+    // IllegalStateException will be thrown.
     public static void setCurrentOperation(String operation) 
                        throws IllegalArgumentException, IllegalStateException {
-        
+        // Which operation are we setting?
         switch(operation) {
+            
             case "View":
+                // View can only be set if the application is not in edit mode
                 if(!editMode) {
                     currentOperation = OPERATIONS[0];
                 }
@@ -53,6 +59,7 @@ public class ApplicationState {
                 break;
                 
             case "Update":
+                // Update can only be set if the appplication is in edit mode
                 if(editMode) {
                     currentOperation = OPERATIONS[1];
                 }
@@ -64,6 +71,7 @@ public class ApplicationState {
                 break;
                 
             case "Add":
+                // Add can only be set if the application is in edit mode
                 if(editMode) {
                     currentOperation = OPERATIONS[2];
                 }
@@ -73,7 +81,7 @@ public class ApplicationState {
                             + editMode);
                 }
                 break;
-                
+            // Something other than Add, Update, View is being passed.    
             default:
                 throw new IllegalArgumentException(operation + " is not a"
                         + " valid application operation.");
@@ -91,7 +99,8 @@ public class ApplicationState {
     public static int getCurrUserId() {
         return currUserId;
     }
-    
+    // There can't be a user ID of 0 so this setter validates the passed value
+    // and throws an IllegalArgumentException if 0 is attempted.
     public static void setCurrUserId(int id) throws IllegalArgumentException {
         
         if(id != 0) {
@@ -103,7 +112,7 @@ public class ApplicationState {
             throw ex;
         }
     }
-    
+    // This getter will call the setter if the user's time zone is null
     public static TimeZone getUserTimeZone() {
         
         
@@ -113,7 +122,7 @@ public class ApplicationState {
         
         return userTimeZone;
     }
-    
+    // The user's time zone cannot be null
     public static void setUserTimeZone(TimeZone timeZone) 
             throws IllegalArgumentException {
         
@@ -127,7 +136,7 @@ public class ApplicationState {
             throw ex;
         }
     }
-    
+    // This getter get's the user's locale if it hasn't been captured already
     public static Locale getLocale() {
         
         if(userLocale == null) {
@@ -136,7 +145,7 @@ public class ApplicationState {
         
         return userLocale;
     }
-    
+    // This setter validates that null isn't being passed as that's not allowed
     public static void setLocale(Locale loc) throws IllegalArgumentException {
         
         if(loc != null) {
@@ -152,7 +161,7 @@ public class ApplicationState {
     public static TimeZone getDatabaseTimeZone() {
         return dbTimeZone;
     }
-    
+    // The database timezone cannot be null
     public static void setDatabaseTimezone(TimeZone tz) 
             throws IllegalArgumentException {
         

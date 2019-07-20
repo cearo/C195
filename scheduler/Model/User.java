@@ -1,13 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package scheduler.Model;
 
 /**
  *
  * @author Cory
+ * This class represents an application user and is modeled after the user
+ * SQL database table.
  */
 public class User {
     

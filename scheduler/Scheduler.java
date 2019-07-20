@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package scheduler;
 
 import java.io.IOException;
@@ -16,6 +11,7 @@ import scheduler.util.AuditLogger;
 /**
  *
  * @author Cory
+ * This class is the main class of the application and initializes JavaFX
  */
 public class Scheduler extends Application {
     public static final String BASE_FOLDER_PATH = "/scheduler/View_Controller/";
@@ -38,6 +34,7 @@ public class Scheduler extends Application {
     }
 
     public static void main(String[] args) {
+        // Initializing logger to configure it.
         AuditLogger.initialize();
         launch(args);
     }

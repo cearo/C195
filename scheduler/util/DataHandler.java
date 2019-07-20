@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package scheduler.util;
 
 import java.sql.Connection;
@@ -16,19 +11,30 @@ import java.time.LocalDateTime;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import scheduler.Model.Appointment;
+import scheduler.Model.Customer;
+import scheduler.View_Controller.CustomersController;
 
 /**
  *
  * @author Cory
+ * This class contains the data source for appointments.
  */
 public class DataHandler {
-
+    // This ObservableList is the underlying data source for the
+    // appointments TablView in Appointments.fxml
     private static final ObservableList APPOINTMENTS =
             FXCollections.observableArrayList();
+    // This is the array which contains the list of customers in the database
+    private static final ObservableList CUSTOMERS = FXCollections.observableArrayList();
     
+    // This getter will populate the list with any appointments that are after
+    // the moment it's invoked, only if APPOINTMENTS is empty. Otherwise it will
+    // return the current APPOINTMENTS list as the application will handle
+    // adding and removing appointments after the initial invocation.
     public static ObservableList getAppointments() {
         
         if(APPOINTMENTS.isEmpty()) {
+            // The query string to get all necessary appointment info
             String allAppointmentInfo = "SELECT app.appointmentId, \n"
                 + "app.customerId, \n"
                 + "cust.customerName, \n"
@@ -97,5 +103,37 @@ public class DataHandler {
         
         return APPOINTMENTS;
     }
+    // This getter method checks if the CUSTOMERS list is is empty and if so
+    // it will query the database for all customer records and populate the list
+    // with them.
+    public static ObservableList getCustomers() {
+        if (CUSTOMERS.isEmpty()) {
+            String allCustomers = "SELECT * FROM customer ORDER BY customerId;";
+            SQLConnectionHandler sql = new SQLConnectionHandler();
+            ResultSet result = sql.executeQuery(allCustomers);
+            // While there are results to get
+            try {
+                while (result.next()) {
+                    // Getting the customer info from the query
+                    int id = result.getInt("customerId");
+                    String name = result.getString("customerName");
+                    int active = result.getInt("active");
+                    int custAddId = result.getInt("addressId");
+                    // Creating a new Customer object
+                    Customer cust = new Customer(id, name, active, custAddId);
+                    // Populating that Customer's Address info. I don't
+                    // assign it as I don't currently have use for it, but
+                    // I will.
+                    cust.getCustomerAddress();
+                    // Adding each customer to the array
+                    CUSTOMERS.add(cust);
+                }
+            } catch (SQLException SqlEx) {
+                SqlEx.printStackTrace();
+            }
+        }
+        return CUSTOMERS;
+    }
+    
     
 }

@@ -1,13 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package scheduler.Model;
 
 /**
  *
  * @author Cory
+ * This exception represents the business logic requiring a user be able to 
+ * enter a valid username/password to enter the application.
  */
 public class LoginFailureException extends Exception {
     

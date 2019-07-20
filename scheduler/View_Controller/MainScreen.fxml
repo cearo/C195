@@ -22,7 +22,6 @@
                   <Separator prefWidth="200.0" />
                   <Hyperlink fx:id="customersLink" alignment="CENTER" contentDisplay="CENTER" onAction="#customersLinkHandler" prefHeight="23.0" prefWidth="183.0" style="-fx-padding: 8;" text="Customers" />
                   <Hyperlink fx:id="appointmentsLink" alignment="CENTER" contentDisplay="CENTER" onAction="#appointmentsLinkHandler" prefHeight="23.0" prefWidth="183.0" style="-fx-padding: 8;" text="Appointments" />
-                  <Hyperlink fx:id="usersLink" alignment="CENTER" contentDisplay="CENTER" onAction="#usersLinkHandler" prefHeight="23.0" prefWidth="183.0" style="-fx-padding: 8;" text="Users" />
                   <Hyperlink fx:id="reportsLink" alignment="CENTER" contentDisplay="CENTER" onAction="#reportsLinkHandler" prefHeight="23.0" prefWidth="183.0" style="-fx-padding: 8;" text="Reports" />
                </children>
             </VBox>
