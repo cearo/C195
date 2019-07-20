@@ -30,7 +30,14 @@
          <children>
             <TabPane fx:id="tabPane" prefHeight="655.0" prefWidth="797.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
-                <Tab id="welcome" fx:id="welcomeTab" text="Welcome" />
+                <Tab id="welcome" fx:id="welcomeTab" text="Welcome">
+                     <content>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                           <children>
+                              <TextArea layoutX="44.0" layoutY="53.0" prefHeight="370.0" prefWidth="710.0" text="Welcome to my C195 Scheduler Project!&#10;&#10;My login results log file is located in the root director for this project, .\scheduler\auditLogin.txt.&#10;&#10;There is currently only one User available. Username: test, Password: test123&#10;&#10;Please select a Menu item from the left hand side. This will open a tab and select it for you. If the tab already exists, &#10;the application will select that tab for you instead of creating a new one.&#10;&#10;The Add, Edit, and Delete buttons work for all tabs except Welcome and Reports. Add and Edit will put the application into &#10;edit mode which will disable TableViews (to prevent the selected object from changing), enable form fields, and transform&#10;the buttons. Add -&gt; Save, Edit -&gt; Cancel, Delete -&gt; disabled. Close will not work while in edit mode.&#10;&#10;Adding a new Customer will also add a new Address record.&#10;" />
+                           </children>
+                        </AnchorPane>
+                     </content></Tab>
               </tabs>
             </TabPane>
             <ToolBar layoutX="538.0" layoutY="662.0" prefHeight="40.0" prefWidth="259.0">
